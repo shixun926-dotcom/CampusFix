@@ -221,7 +221,7 @@ mysql -uroot -p < db/data.sql
 
 默认连接参数在 `src/main/resources/application.yml`，可用环境变量覆盖：`DB_USERNAME`、`DB_PASSWORD`。
 
-### 2. 启动后端
+### 2. 启动后端（:8080，一键启动）
 
 ```bash
 cd backend
@@ -230,8 +230,13 @@ mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8080
 
 > 若本机环境变量存在 `SERVER__PORT` 会覆盖端口，命令行参数优先级更高，因此显式指定 8080。
 
+后端在 8080 端口**同时托管前端构建产物**，启动后浏览器直接打开 http://localhost:8080 即可使用完整应用，无需再单独启动前端。在 IDEA 中直接运行 `CampusFixApplication` 即为一键启动。
+
+- 应用入口：http://localhost:8080
 - 接口文档：http://localhost:8080/swagger-ui.html
 - 健康检查：http://localhost:8080/actuator/health
+
+前端静态资源按优先级加载（见 `StaticResourceConfig`）：`frontend/dist` 目录（开发时改动即时生效）→ jar 内 `classpath:/static/`（`mvn package` 时由 `maven-resources-plugin` 自动复制，`java -jar` 可独立运行）。
 
 ### 3. 登录验证
 
@@ -251,7 +256,9 @@ campusfix.cache.type = auto    # 默认：探测 Redis，不可用则降级
 
 未安装 Redis 时服务仍可正常启动与使用，仅"重启后登录态保留 / 多实例共享"能力缺失，启动日志会打印 WARN。
 
-### 5. 启动前端（PC 端）
+### 5. （可选）前端热更新开发模式（:5173）
+
+需要修改前端代码并热更新调试时，才单独启动 Vite：
 
 ```bash
 cd frontend
@@ -261,14 +268,13 @@ npm run dev       # 启动后访问 http://localhost:5173
 
 | 地址 | 是什么 |
 |---|---|
-| http://localhost:5173 | **前端页面**（登录 → 工作台 → 工单管理 → 用户管理） |
-| http://localhost:8080 | **纯 API 服务**，根路径 302 跳 Swagger |
+| http://localhost:8080 | **完整应用**（后端 + 前端页面，一键启动入口） |
+| http://localhost:5173 | 前端热更新开发模式（仅改前端时用） |
 | http://localhost:8080/swagger-ui.html | 接口文档 |
 
 Vite 已配置 `/api` 代理到 8080，前端不需要单独配后端地址。
 
-> **为什么直接开 8080 是一段 JSON？**
-> 8080 没有页面。未登录访问任意路径都会被 Spring Security 拦截，返回 `{"code":1001,"message":"未登录或登录已失效"}`——这是鉴权正常的响应，不是报错。要看界面请开 5173。
+> **日常使用无需启动前端**：后端 8080 已内置前端构建产物，直接开 http://localhost:8080 即为完整应用。
 
 ### 6. 启动日志判读（哪些是真问题）
 
@@ -661,6 +667,25 @@ UI 基于**自建设计系统**（`frontend/src/styles/theme.css`，最初移植
 | 2026-10-30 | 新增 `TokenStore` 抽象：Redis 不可用时自动降级为进程内存储 | 本机无 Redis 且无法联网下载二进制，需保证"本地跑通" | 仅影响重启保留登录态与多实例；生产设 `cache.type=redis` 即与设计一致 |
 | 2026-10-30 | 前端未采用 Element Plus / ECharts：UI 使用自建设计系统，工作台图表为手写 SVG / CSS | 统一品牌视觉、减少依赖；当前图表只需基础可视化 | 功能一致；组件与图表能力以 `theme.css`、`src/ui/` 为准，后端接口不变 |
 | 2026-10-30 | 状态文案与配色未抽到 `constants/orderStatus.ts`，实际集中在 `src/ui/OrderStatusTag.vue` | 目前只有工作台、工单列表、详情抽屉三处用到，抽文件的收益低于多维护一份映射 | 设计说明书 §8「前端规范」该条与代码不符；后续统计页或小程序若要复用，需先把映射迁到 `constants/` |
+| 2026-10-31 | 后端 8080 托管前端构建产物（`StaticResourceConfig`），实现一键启动 | 解决「IDEA 点击一次运行即完整可用、无需单独起 Vite」的诉求，彻底绕开 IDEA 拉起 Vite 的不稳定环节 | 本地开发默认访问 8080；前端 5173（`npm run dev`）降级为可选的热更新模式，二者并存不冲突 |
+
+## 十二、一键启动改造记录（2026-10-31）
+
+为解决「在 IDEA 中点击一次运行即可在浏览器直接访问完整应用」的诉求，后端在 8080 端口直接托管前端构建产物：
+
+**改动清单**
+
+| 文件 | 改动 |
+|---|---|
+| `backend/.../config/StaticResourceConfig.java` | 新增：前端 `dist` 绝对路径查找 + `/` 静态托管 + history 路由 SPA 回退 |
+| `backend/.../web/HomeController.java` | 根路径 `/` 由 `redirect:/swagger-ui.html` 改为 `forward:/index.html` |
+| `backend/.../config/SecurityConfig.java` | 鉴权边界改为「`/api/v1/auth/login\|refresh` 放行 → `/api/v1/**` 鉴权 → 其余放行」 |
+| `backend/pom.xml` | `maven-resources-plugin` 在 process-resources 阶段复制 `frontend/dist` 进 jar 的 `static/`（属性 `frontend.dist.skip` 可控） |
+| `start-frontend.bat` | 前端独立启动脚本（可选热更新模式用） |
+
+**验证结果**：`mvn spring-boot:run` 与 `java -jar` 两条路径下，`/`、`/assets/*.js`、`/student`、`/admin` 均返回 200；登录接口返回真实 JWT；未授权 `/api/v1/**` 返回 401。
+
+**关键坑**：根路径曾一直 302 到 swagger，先后误判为 springdoc welcome 机制，最终靠「Ambiguous mapping」报错定位到项目里早已存在的 `HomeController#home()` 重定向；此外 `/assets/**` 静态映射存在路径少一层 `assets/` 的拼接错误，导致 JS/CSS 返回 5000、页面卡在启动加载页——已一并修复。
 
 ## 十一、下一步
 
