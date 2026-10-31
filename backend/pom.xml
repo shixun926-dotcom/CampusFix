@@ -26,6 +26,9 @@
         <springdoc.version>2.8.9</springdoc.version>
         <easyexcel.version>4.0.3</easyexcel.version>
         <lombok.version>1.18.48</lombok.version>
+        <!-- 一键启动：是否跳过复制前端 dist 到 jar。若 frontend/dist 尚未构建，
+             可通过 -Dfrontend.dist.skip=true 跳过（默认 false，dist 存在时正常打包） -->
+        <frontend.dist.skip>false</frontend.dist.skip>
     </properties>
 
     <dependencies>
@@ -155,6 +158,32 @@
                         <arg>-parameters</arg>
                     </compilerArgs>
                 </configuration>
+            </plugin>
+            <!-- 一键启动：把前端构建产物 frontend/dist 复制进 jar 的 static/，
+                 使 java -jar 也能独立托管 SPA，无需单独跑前端服务。
+                 dist 目录缺失时跳过，不影响纯后端开发。 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-frontend-dist</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${frontend.dist.skip}</skip>
+                            <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/../frontend/dist</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
