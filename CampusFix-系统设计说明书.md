@@ -1584,11 +1584,11 @@ WantedBy=multi-user.target
 |---|---|---|
 | 2026-10-30 | v1.0 | 首次成文，覆盖架构、模块、数据流、接口、数据库、部署、非功能、风险 |
 | 2026-10-30 | v1.1 | §6.2 由文字关系列表改为 **SVG 版 ER 图**（20 实体 / 25 关系 / 卡迪纳尔基数），新增图例、关系清单与设计要点；同步新增 `assets/er-diagram.svg`、`er-diagram.html`、`er-diagram.png` |
-| 2026-10-30 | v1.2 | 进入编码阶段：新增 ADR-11（令牌存储抽象与 Redis 降级）；实现进度见 `README.md`；`db/schema.sql`、`db/data.sql` 与 §6 表结构一致落地 |
+| 2026-10-30 | v1.2 | 进入编码阶段：新增 ADR-11（令牌存储抽象与 Redis 降级）；实现进度见 `PROGRESS.md`；`db/schema.sql`、`db/data.sql` 与 §6 表结构一致落地 |
 | 2026-10-30 | v1.3 | 构建目标统一为 **Java 17**（`--release 17`，字节码 major 61），代码只使用 17 已定稿特性；与 §2.4「Java 17」保持一致；关闭 Actuator Redis 健康项以适配无 Redis 的本地环境 |
 | 2026-10-30 | v1.4 | 新增学生导入：`sys_user.class_name`（+ `idx_class`）、`POST /users/students`、`GET /users/import/template`、`POST /users/import`；导入采用逐行校验、部分成功策略，表头强校验 |
 | 2026-10-30 | v1.5 | 工单域主干落地：状态机引擎（17 动作 / 18 条边、角色+前置校验+副作用）、提交报修与审核、指派/转派/抢单/接单/退单、24h 自动派单；新增 ADR-12（`ASSIGN` 放行 `SYSTEM`）；工单接口补 `/orders/auto-assign`、`/repairers`；`GET /orders/{id}` 增加 `actions` 字段 |
-| 2026-10-30 | v1.6 | 前端整体视觉改版：重写设计令牌与基础元件，深色渐变侧栏 + 毛玻璃顶栏；工作台增加 Hero、KPI、7 日趋势柱状图、状态分布环形图、分类 TOP5 与最近工单；工单 / 用户 / 登录 / 详情抽屉 / 新建弹窗视觉升级；新增启动闪屏与 6 个分类图标；不引入组件库与图表库，后端接口不变。详见 `README.md` §八「界面改版记录」 |
+| 2026-10-30 | v1.6 | 前端整体视觉改版：重写设计令牌与基础元件，深色渐变侧栏 + 毛玻璃顶栏；工作台增加 Hero、KPI、7 日趋势柱状图、状态分布环形图、分类 TOP5 与最近工单；工单 / 用户 / 登录 / 详情抽屉 / 新建弹窗视觉升级；新增启动闪屏与 6 个分类图标；不引入组件库与图表库，后端接口不变。详见 `PROGRESS.md` §八「界面改版记录」 |
 | 2026-10-30 | v1.7 | 工单管理改为「故障分类优先」：顶部展示「全部 + 9 个启用分类」共 10 张卡片，含各类实时工单数；点击卡片按 `categoryId` 筛选，支持再次点击 / 「查看全部」取消；复用 `GET /orders?categoryId=` 与 `GET /categories`，未新增后端接口 |
 | 2026-10-30 | v1.8 | 预约与维修过程落地：`repair_schedule` 四态流转（OFFERED→SELECTED→CONFIRMED/CANCELLED）、改约与拒绝改约、仅 CONFIRMED 做重叠校验；`repair_record` 三点打点与维修记录；提交结果写入 `confirm_deadline`（默认 3 天）；`RESCHEDULE_REJECT` 源状态扩为 ACCEPTED + PROCESSING；`LocalTime` 改为 `HH:mm` 序列化并宽松反序列化 |
 | 2026-10-30 | v1.9 | 前后端分离改造：前端对外地址全部收敛到 `src/config/env.ts`；后端跨域白名单、图片基地址、Swagger 源站、数据库地址改为配置驱动；新增 `deploy/`（nginx + compose）与两端 Dockerfile；接口契约与页面结构零变更，不设环境变量时行为与 v1.8 一致。详见 `CampusFix-前后端分离改造说明.md` |

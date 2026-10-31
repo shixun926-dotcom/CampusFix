@@ -60,7 +60,7 @@ CampusFix/
 │   └── docker-compose.yml            mysql + backend + frontend 一键编排
 │
 ├── .env.example                      编排用环境变量模板
-├── README.md
+├── README.md / PROGRESS.md       项目介绍 / 开发进度看板
 ├── CampusFix-项目注意文档.md          设计基线
 ├── CampusFix-系统设计说明书.md        系统设计
 └── CampusFix-前后端分离改造说明.md    本文件

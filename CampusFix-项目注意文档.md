@@ -523,7 +523,7 @@ public interface FileStorageService {
 - 三个入口共用一套代码，按角色动态挂载路由：`/student`、`/repairer`、`/admin`。
 - 响应式适配到 1280px，不做手机精细适配（一期）。
 
-> **2026-10-30 实现注记**：实际前端未引入 Element Plus / ECharts，改用自建设计系统与手写 SVG / CSS 图表；工单管理增加「故障分类优先」导航。详见 `README.md` §八「界面改版记录」。
+> **2026-10-30 实现注记**：实际前端未引入 Element Plus / ECharts，改用自建设计系统与手写 SVG / CSS 图表；工单管理增加「故障分类优先」导航。详见 `PROGRESS.md` §八「界面改版记录」。
 
 ### 13.2 小程序预留（A23）
 

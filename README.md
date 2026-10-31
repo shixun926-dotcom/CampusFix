@@ -1,670 +1,213 @@
 # CampusFix — 校园设施报修与工单管理平台
 
-> 项目介绍与开发进度看板。**本文件随开发进度持续更新**，与代码状态保持同步。
->
-> 最后更新：2026-10-31　|　当前阶段：**第 1 阶段 基础功能开发（进行中）**　|　后端可运行 ✅　|　前端界面改版 ✅　|　站内聊天与通知 ✅　|　统计与预警 ✅　|　操作日志切面 ✅
+> 面向校园场景的一体化报修与后勤工单管理系统：从「发现设施问题」到「维修验收、评价反馈、数据洞察」的全流程线上化闭环。
 
-## 一、项目简介
+![Java](https://img.shields.io/badge/Java-17-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.x-6DB33F) ![Vue](https://img.shields.io/badge/Vue-3.5-42B883) ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6) ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1) ![License](https://img.shields.io/badge/license-MIT-blue)
 
-CampusFix 面向校园场景，把"发现设施问题 → 报修 → 审核 → 派单 → 维修 → 验收 → 评价"的全过程线上化，并沉淀设施档案与故障数据，辅助后勤运维决策。
+---
 
-- 业务流程闭环：**报修 → 工单 → 分配 → 维修 → 验收 → 评价 → 数据分析**
-- 四类角色：学生、维修人员、后勤管理员、系统管理员
-- 一期形态：**PC 端 Web**（Vue 3），微信小程序为二期，目录已预留
+## 项目简介
 
-## 二、当前进度
+CampusFix 把校园后勤的报修业务搬到了线上：
 
-图例：✅ 已完成并自测　🚧 进行中　⬜ 未开始
+**提交报修 → 后勤审核 → 指派 / 抢单 → 预约上门 → 维修打点 → 确认验收 → 评价 / 投诉**，全过程状态可追踪、操作可审计、数据可洞察。
 
-### 第 1 阶段：基础功能开发
+系统面向四类角色，并提供**按角色定制的工作台**：
 
-| 模块 | 状态 | 说明 |
-|---|---|---|
-| 数据库结构与测试数据 | ✅ | 25 张表 + 测试数据（11 个账号、11 张覆盖全状态的工单、41 条流转日志） |
-| Maven 工程与启动骨架 | ✅ | Spring Boot 3.5.16 / Java 21（JDK 25 运行）/ MyBatis-Plus 3.5.18 |
-| 统一响应与全局异常 | ✅ | `Result{code,message,data,traceId}`、错误码分段、参数校验统一处理 |
-| 认证与令牌 | ✅ | 登录、刷新、注销、当前用户、改密；JWT + 白名单；失败 5 次锁定 15 分钟 |
-| 用户管理 | ✅ | 分页、增改、启停、重置密码、信誉分调整（写流水） |
-| 学生导入 | ✅ | 单个添加 + Excel 批量；表头强校验、逐行校验、部分成功并返回失败明细 |
-| 角色与权限 | ✅ | RBAC 五表、权限树、分配权限、方法级 `@PreAuthorize` |
-| 部门树 | ✅ | 树形维护、多部门分片基础（`getDescendantIds` 供数据权限用） |
-| 系统参数 | ✅ | 键值参数 + 60s 本地缓存，信誉分/权重/天数可运行期调整 |
-| 操作日志 | ✅ | `@OperLog` 注解 + AOP 切面：模块/操作/方法/参数（脱敏）/IP/成败/错误/耗时落 `sys_oper_log`，日志失败不影响业务；已覆盖工单全动作、预约、验收、投诉、用户管理、系统参数（2026-10-31） |
-| 操作日志查询页 | ✅ | `GET /oper-logs` 分页筛选（账号/模块/成败/日期区间）+ 管理端「操作日志」页（侧栏 `log:list` 可见，行点击查看脱敏参数与错误详情）（2026-10-31） |
-| 维修工日历 | ✅ | `GET /repairers/{id}/calendar` 未来 N 天已确认上门时段 + 在办数；指派/转派面板选中维修工后展示忙闲；本人亦可查看自己的日历（2026-10-31） |
-| 维修异常态 | ✅ | 挂起（必填原因）/恢复/无法维修 REST 端点补齐，维修面板按状态显示对应按钮，挂起时长不计入维修用时（2026-10-31） |
-| 工单状态机 | ✅ | 17 个动作 / 18 条合法边；角色 + 前置校验 + 副作用；`version` 乐观锁 CAS |
-| 提交报修与审核 | ✅ | 图片 1–9 张、隐私确认、质保判定（3 天同位置同类型）、审核通过 / 驳回、管理员取消 |
-| 派单与抢单 | ✅ | 指派 / 转派 / 抢单 / 接单 / 退单；抢单冲突返回 409；退单扣 10 信誉分 |
-| 24h 自动派单 | ✅ | 每 10 分钟扫描，按「同部门 → 在办最少」派单，系统身份写流转日志 |
-| 维修预约 | ✅ | 维修工给 1–3 个时段 → 报修人选择 → 维修工确认 → 转处理中；改约与拒绝改约；仅 CONFIRMED 做重叠校验 |
-| 维修过程 | ✅ | 到达/开始打点、维修内容与材料、前后照片、提交结果入待确认（写入 3 天验收截止） |
-| 确认验收 | ✅ | 报修人确认完成（解锁评价）；延期申请与管理员审批（通过后顺延截止时间） |
-| 返修 | ✅ | 待确认 → 待处理：清空维修人、作废预约、返修计数 +1，可重新派单/抢单 |
-| 超时自动验收 | ✅ | 每日 02:00 扫描 `confirm_deadline` 过期工单，自动完成并扣报修人 10 信誉分 |
-| 评价 | ✅ | 三维评分（速度/态度/效果 1–5）+ 加权总分；权重读 `sys_config`；一单一次；匿名对外脱敏；评价后维修工 +1 信誉分 |
-| 投诉 | ✅ | 报修人提交 → 管理端受理 → 成立/不成立；成立扣维修工 10 分；按部门分片，同单只允许一条未终结投诉 |
-| 聊天、通知 | ✅ | 工单维度聊天（相关方校验、拉取即已读、1–500 字）+ 站内通知（状态机触发点、未读数、已读）+ WebSocket 实时推送（token 握手鉴权、断线重连、轮询兜底）（2026-10-31） |
-| 统计与预警 | ✅ | `/stats/overview` 后端聚合（角色数据权限、基线 §12 口径）；工作台改接真实统计（去 100 条样本估算）；设施状态联动（PROCESSING→REPAIRING、完成→NORMAL）；报修可选关联设施；重复故障预警（同楼栋+7 天+同类型+≥5 单，每日 08:00）+ 管理端横幅（2026-10-31） |
-| 独立统计页 | ✅ | `/stats` 页（侧栏「洞察」，管理端）：维修工绩效排行（完成数/加权均分/好评率/平均处理时长）、近 6 个月新增与完成双柱趋势、投诉率与投诉结构；`GET /stats/insight` 后端聚合，后勤按部门过滤（2026-10-31） |
-| 消息中心页 | ✅ | `/notifications` 页：全量通知（工单/聊天/系统筛选 + 只看未读 + 分页），顶栏通知铃加「查看全部消息」入口，侧栏「洞察」组常驻入口（2026-10-31） |
-| 前端工程 | ✅ | Vite 5 + Vue 3.5 + TS + Pinia + Vue Router + Axios；自建设计系统（无组件库）；登录、主布局、工作台、工单管理、用户管理 |
-| 前端界面改版 | ✅ | 设计系统重构 + 全页面视觉升级；工单管理改为「故障分类优先」导航；学生 / 维修人员工作台按角色轻量化（2026-10-30 / 31，详见 §八「界面改版记录」） |
-| 前端页面：统计 | ✅ | `/stats` 独立统计页已上线（侧栏「洞察」，管理端），数据来自 `GET /stats/insight`（2026-10-31） |
-
-### 已实现的接口（可用 curl 验证）
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| POST | `/api/v1/auth/login` | 登录，返回 access/refresh token 与权限码 |
-| POST | `/api/v1/auth/refresh` | 刷新令牌 |
-| POST | `/api/v1/auth/logout` | 注销（删除白名单） |
-| GET | `/api/v1/auth/me` | 当前用户 + 权限 + 菜单 |
-| PUT | `/api/v1/auth/password` | 修改密码 |
-| GET | `/api/v1/users` | 用户分页（`user:list`） |
-| POST/PUT | `/api/v1/users`、`/{id}` | 新增/修改（`user:add` / `user:edit`） |
-| PUT | `/api/v1/users/{id}/status` | 启停用（立即踢下线） |
-| PUT | `/api/v1/users/{id}/reset-password` | 重置为默认密码 |
-| POST | `/api/v1/users/students` | 手动添加单个学生（姓名 / 学号 / 班级 / 手机号） |
-| GET | `/api/v1/users/import/template` | 下载学生导入模板（xlsx，含填写说明） |
-| POST | `/api/v1/users/import` | Excel 批量导入，返回 总数 / 成功 / 失败 + 逐行原因 |
-| POST | `/api/v1/users/{id}/credit` | 调整信誉分 |
-| GET | `/api/v1/depts/tree` | 部门树 |
-| GET | `/api/v1/roles` | 角色列表 |
-| GET | `/api/v1/permissions/tree` | 权限树 |
-| PUT | `/api/v1/roles/{id}/permissions` | 分配权限 |
-| GET/PUT | `/api/v1/configs`、`/{key}` | 系统参数 |
-| POST | `/api/v1/orders` | 提交报修（全角色，需隐私确认 + 1–9 张图） |
-| GET | `/api/v1/orders` | 工单列表（学生看自己的 / 维修工看名下与自报 / 后勤按部门 / 管理员全部） |
-| GET | `/api/v1/orders/pool` | 抢单池（全部待处理，按优先级排序） |
-| GET | `/api/v1/orders/{id}` | 详情（含 `actions`：当前用户可执行的动作） |
-| GET | `/api/v1/orders/{id}/logs` | 流转时间轴 |
-| POST | `/api/v1/orders/{id}/review`、`/reject`、`/cancel` | 审核通过 / 驳回 / 取消 |
-| POST | `/api/v1/orders/{id}/assign`、`/transfer` | 指派 / 转派 |
-| POST | `/api/v1/orders/{id}/grab`、`/accept`、`/return` | 抢单 / 接单 / 退单（冲突返回 409） |
-| GET | `/api/v1/orders/{id}/schedules` | 预约时段列表（含每个时段当前能否选/能否接受） |
-| POST | `/api/v1/orders/{id}/schedules` | 维修工提供可上门时段（1–3 个） |
-| PUT | `/api/v1/schedules/{sid}/select` | 报修人选择时段 |
-| PUT | `/api/v1/schedules/{sid}/confirm` | 维修工确认时段（工单转处理中，写上门时间） |
-| POST | `/api/v1/orders/{id}/reschedule` | 维修工发起改约（新增提议时段） |
-| PUT | `/api/v1/schedules/{sid}/accept`、`/reject` | 报修人接受 / 拒绝改约（拒绝则回抢单池） |
-| POST | `/api/v1/orders/{id}/arrive`、`/start` | 到达打点 / 开始维修打点 |
-| POST | `/api/v1/orders/{id}/suspend` | 挂起（必填原因，挂起时长不计入维修用时） |
-| POST | `/api/v1/orders/{id}/resume` | 恢复（挂起 → 处理中） |
-| POST | `/api/v1/orders/{id}/unrepairable` | 判定无法维修（必填原因，工单转已驳回） |
-| GET/PUT | `/api/v1/orders/{id}/record` | 查看 / 保存维修记录（内容、材料、结果、维修前照片） |
-| POST | `/api/v1/orders/{id}/complete` | 提交维修结果（工单转待确认） |
-| GET | `/api/v1/orders/{id}/acceptance` | 验收概况（剩余时长、延期记录） |
-| POST | `/api/v1/orders/{id}/confirm` | 报修人确认完成 |
-| POST | `/api/v1/orders/{id}/rework` | 报修人申请返修（退回抢单池） |
-| POST | `/api/v1/orders/{id}/extension` | 报修人申请延期确认 |
-| PUT | `/api/v1/extensions/{id}/handle` | 管理员审批延期（通过则顺延） |
-| POST | `/api/v1/orders/auto-confirm` | 手动触发一次超时自动验收（运维用） |
-| POST | `/api/v1/orders/{id}/evaluation` | 提交评价（报修人，一单一次） |
-| GET | `/api/v1/orders/{id}/evaluation` | 查看工单评价（未评价返回 null） |
-| GET | `/api/v1/repairers/{id}/evaluations` | 维修工收到的评价列表（匿名按角色脱敏） |
-| GET | `/api/v1/repairers/{id}/evaluation-summary` | 维修工评价汇总（均分、各维度、好评率） |
-| POST | `/api/v1/orders/{id}/complaint` | 提交投诉（报修人） |
-| GET | `/api/v1/orders/{id}/complaints` | 工单的投诉记录 |
-| GET | `/api/v1/complaints` | 投诉列表（按部门分片，附各状态计数与投诉率） |
-| PUT | `/api/v1/complaints/{id}/handle` | 处理投诉（成立则扣维修工 10 分） |
-| GET | `/api/v1/notifications` | 通知列表（分页，附未读数） |
-| GET | `/api/v1/notifications/unread-count` | 未读数 |
-| PUT | `/api/v1/notifications/{id}/read` | 标记单条已读 |
-| PUT | `/api/v1/notifications/read-all` | 全部已读 |
-| GET | `/api/v1/orders/{id}/messages` | 工单会话历史（拉取即已读） |
-| POST | `/api/v1/orders/{id}/messages` | 发送消息（相关方，1–500 字） |
-| WS | `/ws?token=<accessToken>` | 实时推送（NOTIFY / CHAT / CONNECTED 帧） |
-| POST | `/api/v1/orders/auto-assign` | 手动触发一次超时自动派单（运维用） |
-| GET | `/api/v1/stats/overview` | 工作台统计总览（KPI/状态计数/完成数/时长/趋势/TOP5，按角色出数） |
-| GET | `/api/v1/facilities?locationId=` | 某位置下的设施列表（报修关联用，已报废不返回） |
-| GET | `/api/v1/fault-alerts` | 高频故障预警列表（管理端） |
-| GET | `/api/v1/fault-alerts/new-count` | 未处理预警数（横幅角标） |
-| PUT | `/api/v1/fault-alerts/{id}/status` | 标记预警 READ / HANDLED |
-| POST | `/api/v1/fault-alerts/scan` | 手动触发一次预警扫描（运维用） |
-| GET | `/api/v1/oper-logs` | 操作日志分页（账号/模块/成败/日期筛选，`log:list`） |
-| GET | `/api/v1/oper-logs/modules` | 日志模块下拉（去重，`log:list`） |
-| GET | `/api/v1/repairers/{id}/calendar` | 维修工日历（未来 N 天已确认时段 + 在办数；本人或管理端） |
-| GET | `/api/v1/stats/insight` | 统计页洞察（维修工绩效排行、月度趋势、投诉汇总；`order:review` / `order:assign`） |
-| GET | `/api/v1/repairers` | 可指派维修工（在办少的排前面） |
-| POST | `/api/v1/files/upload` | 上传图片（后缀 + 魔数 + 大小三重校验） |
-| GET | `/api/v1/locations/tree` | 位置树（校区→区域→楼栋→楼层→房间） |
-| GET | `/api/v1/categories` | 故障类型（含责任部门） |
-| GET | `/swagger-ui.html` | 在线接口文档 |
-
-### 学生导入约定
-
-| 项 | 规则 |
+| 角色 | 能做什么 |
 |---|---|
-| 模板表头 | `姓名 | 学号 | 班级 | 手机号`，**顺序与文案必须完全一致**，增删列会直接拒绝 |
-| 必填 | 姓名、学号、班级；手机号选填（填则须为 11 位手机号） |
-| 学号 | 4-30 位数字或字母，系统内唯一，**同时作为登录账号** |
-| 初始密码 | 统一 `Cf@123456`，`pwd_reset_flag=1`，首次登录需修改 |
-| 规模 | 单次 ≤ 2000 行，空行自动跳过 |
-| 失败策略 | **逐行校验、部分成功**：合法行照常入库，非法行跳过并在 `errors` 中给出「行号 / 学号 / 姓名 / 原因」 |
-| 去重 | 同时校验「文件内重复」与「库内已存在」 |
+| 🎓 学生 | 提交报修（1–9 张现场照片）、选择上门时段、确认验收 / 申请返修、评价与投诉、与维修工实时沟通 |
+| 🔧 维修人员 | 抢单 / 接单 / 退单、提供可上门时段、维修过程打点与记录、发起改约、挂起 / 恢复 / 判定无法维修、查看自己的日历与评价 |
+| 🏢 后勤管理员 | 工单审核、指派 / 转派（含维修工忙闲日历辅助决策）、投诉受理、部门级数据统计与高频故障预警 |
+| 🛠 系统管理员 | 全局数据、用户与角色权限管理（RBAC）、学生批量导入、系统参数、操作日志审计 |
 
-前端入口：用户管理页右上角「添加学生」「批量导入」，弹窗内可直接下载模板并查看失败明细。
+---
 
-## 三、技术栈（与《系统设计说明书》§2.4 一致）
+## 功能特性
 
-| 分类 | 选型 |
+### 工单全生命周期
+- **10 状态工单状态机**：17 个动作 / 18 条合法边，集中式转换表 + `version` 乐观锁防并发抢单冲突（HTTP 409）
+- **抢单与指派并存**：审核通过进入全局抢单池；管理员可手动指派 / 转派；超时 24h 无人处理自动派单给在办最少的维修工
+- **意向时段预约模型**：维修工给出 1–3 个可上门窗口 → 报修人选择 → 维修工确认；支持改约与拒绝改约，仅已确认时段做冲突校验
+- **维修过程留痕**：到达 / 开始 / 结束三点打点、维修内容与材料、维修前后照片（整单累计 ≤ 9 张，后缀 + 魔数 + 大小三重校验）
+- **验收闭环**：3 天超时自动验收（扣报修人信誉分）、延期申请与审批、返修退回抢单池并关联质保
+
+### 信誉与评价体系
+- 双向信誉分：退单 / 投诉成立 / 超时不确认扣分，正常完成加分，全部走 `sys_config` 可配
+- 三维加权评分（速度 / 态度 / 效果），权重运行期可调；匿名评价在后端脱敏，本人与管理员可见真名
+- 投诉按部门分片受理，「成立」才扣分，投诉率口径 `投诉数 / (总单数 + 10)`
+
+### 实时消息与沟通
+- 站内通知：工单每一次流转自动触达相关方（WebSocket 实时推送 + 落库离线可补 + 断线重连）
+- 工单维度聊天：报修人 ↔ 维修人一对一，管理员可查看与介入，拉取即已读
+- 消息中心：全量通知检索、未读角标、一键已读
+
+### 数据洞察与审计
+- 工作台按角色呈现：管理端 KPI / 趋势 / 状态分布 / 楼栋与类型 TOP5；学生与维修工有各自的定制首页，KPI 卡支持点击下钻到对应工单列表
+- 独立统计页：维修工绩效排行（完成数 / 加权评分 / 好评率 / 平均处理时长）、近 6 个月趋势、投诉结构
+- 重复故障预警：同楼栋 + 7 天 + 同类型 ≥ 5 单自动生成预警，管理端横幅提示
+- 操作日志：`@OperLog` 注解 + AOP 切面，关键写操作全量落库（参数脱敏），管理端可检索审计
+- 设施档案：报修可关联设施，工单流转自动联动设施状态（维修中 / 恢复正常）
+
+### 平台能力
+- **RBAC 五表权限模型**：权限树、方法级 `@PreAuthorize`、SQL 层数据权限（后勤按部门分片，维修工可见全局抢单池）
+- **学生批量导入**：Excel 模板强校验、逐行校验部分成功、失败明细逐行返回
+- **前后端分离**：跨域白名单、资源基地址、Swagger 源站全部配置化，支持同源 / 分域 / Docker 三种部署形态
+- **自建设计系统**：无组件库依赖，设计令牌集中管理，一键换品牌色；图表为手写 SVG / CSS，构建产物轻量
+
+---
+
+## 技术栈
+
+| 分层 | 选型 |
 |---|---|
-| 后端 | **Java 17**（`--release 17`，字节码 major 61）、Spring Boot 3.5.16、Spring Security、MyBatis-Plus 3.5.18、MySQL 8.0.46 |
-| 令牌/缓存 | JWT（jjwt 0.12.6）+ 令牌存储抽象（生产 Redis / 本地可降级进程内） |
-| 文档 | springdoc-openapi 2.8.9（Swagger UI） |
-| 前端 | Vue 3.5 + Vite 5 + TypeScript + Pinia + Vue Router + Axios；**UI 为自建设计系统**（移植自 DhuStore），不依赖组件库 |
-| 存储 | 本地目录 / 阿里云 OSS，通过 `FileStorageService` 切换 |
+| 后端 | Java 17 · Spring Boot 3.5 · Spring Security + JWT · MyBatis-Plus · MySQL 8.0 · Redis（可选，自动降级进程内） |
+| 前端 | Vue 3.5 · Vite 5 · TypeScript · Pinia · Vue Router · Axios · 自建设计系统（theme.css） |
+| 实时通信 | 原生 WebSocket（握手 token 鉴权 + 会话注册表推送） |
+| 文档 | springdoc-openapi（Swagger UI） |
+| 存储 | 本地目录 / 阿里云 OSS（`FileStorageService` 抽象，配置切换） |
+| 部署 | Dockerfile ×2 + docker-compose（MySQL / 后端 / 前端 一键编排） |
 
-## 四、目录结构
+## 架构
+
+采用**模块化单体（Modular Monolith）**：单 jar 部署，代码按业务域分包（平台域 / 工单域 / 资产域 / 支撑域），模块间只通过 Service 接口通信，为将来拆分预留边界。
 
 ```
-CampusFix/
-├── backend/                     【后端】Spring Boot，产物 campusfix.jar
-│   ├── db/
-│   │   ├── schema.sql           建库建表（25 张）
-│   │   └── data.sql             测试数据
-│   ├── src/main/java/com/campusfix/
-│   │   ├── common/              统一响应、异常、枚举、配置、安全、跨域
-│   │   ├── auth/                认证
-│   │   ├── system/              用户、角色、部门、参数、日志
-│   │   ├── order/               工单域：状态机、派单、预约、维修过程
-│   │   ├── message/             通知与聊天：notification / chat_message、WebSocket 推送
-│   │   ├── asset/               位置树
-│   │   └── file/                存储抽象（local / oss）与上传接口
-│   ├── Dockerfile               独立镜像
-│   └── pom.xml
-├── frontend/                    【前端】Vue 3，产物 dist/ 静态文件
-│   ├── src/config/env.ts        ★ 唯一的对外地址出口（API / 资源 / 源站）
-│   ├── src/api/                 request 封装（统一响应/401 跳转）、各模块接口
-│   ├── src/router/              路由与登录守卫
-│   ├── src/stores/auth.ts       Pinia：令牌与用户信息
-│   ├── src/views/               登录 / 主布局 / 工作台 / 工单（分类导航+预约+维修+评价投诉+聊天）/ 投诉管理 / 用户管理
-│   ├── src/ui/                  自建 UI：线性图标 / 轻提示 / 确认弹窗 / 状态标签
-│   ├── src/styles/theme.css     设计令牌与元件（必读）
-│   ├── .env.development         开发配置（接口走代理）
-│   ├── .env.production.example  生产配置模板（分域部署用）
-│   ├── nginx.conf               容器内 Nginx（静态 + 反代）
-│   ├── Dockerfile               独立镜像
-│   └── vite.config.ts           代理目标读 VITE_PROXY_TARGET
-├── deploy/
-│   ├── nginx.conf               单机部署参考（静态 + 反代）
-│   └── docker-compose.yml       mysql + backend + frontend 一键编排
-├── .env.example                 编排环境变量模板
-├── assets/                      ER 图（svg/html/png）
-├── CampusFix.md                 原始需求
-├── CampusFix-项目注意文档.md     设计基线（冲突以此为准）
-├── CampusFix-系统设计说明书.md   系统设计（架构/接口/表结构）
-├── CampusFix-前后端分离改造说明.md 前后端职责、接口契约、部署与迁移
-└── README.md                    本文件
+Nginx (:443)
+ ├── /          → 前端静态资源（Vue 3 SPA）
+ ├── /api       → Spring Boot (:8080)
+ ├── /ws        → WebSocket 实时推送
+ └── /files     → 图片资源（本地存储模式）
+                      │
+        ┌─────────────┴─────────────┐
+        │  平台域  认证 · 用户 · RBAC · 参数 · 日志 │
+        │  工单域  状态机 · 派单 · 预约 · 验收 · 评价 │
+        │  资产域  位置树 · 设施档案 · 故障预警      │
+        │  支撑域  文件 · 通知 · 聊天 · 定时任务     │
+        └─────────────┬─────────────┘
+                 MySQL 8 · Redis · OSS
 ```
 
-## 五、快速启动
+- 分层架构图：[`整体分层与模块划分.png`](./整体分层与模块划分.png)
+- 数据库 ER 图（25 张表）：[`assets/er-diagram.svg`](./assets/er-diagram.svg)
 
-### 0. 运行前置条件
+---
 
-| 依赖 | 版本要求 | 是否必需 | 说明 |
-|---|---|---|---|
-| JDK | **17 及以上** | 必需 | 工程以 `--release 17` 编译，字节码 major 61，可直接在 JDK 17 下运行；高版本 JDK 亦可运行 |
-| Maven | 3.6+ | 必需 | 依赖管理 |
-| MySQL | 8.0+ | 必需 | 字符集 `utf8mb4`，需 `campusfix` 库建表权限 |
-| Redis | 6.0+ | 可选 | 不装则自动降级为进程内令牌存储（见偏差记录） |
-| Node.js | 18+ / pnpm | 前端阶段才需要 | 一期后端可独立运行 |
+## 快速开始
+
+### 环境要求
+
+| 依赖 | 版本 | 必需 |
+|---|---|---|
+| JDK | 17+ | ✅ |
+| Maven | 3.6+ | ✅ |
+| MySQL | 8.0+（utf8mb4） | ✅ |
+| Redis | 6.0+ | 可选（不装自动降级进程内令牌存储） |
+| Node.js | 18+ | 前端开发需要 |
 
 ### 1. 初始化数据库
 
 ```bash
 cd backend
-mysql -uroot -p < db/schema.sql
-mysql -uroot -p < db/data.sql
+mysql -uroot -p < db/schema.sql    # 建库建表（25 张）
+mysql -uroot -p < db/data.sql      # 测试数据（角色账号、覆盖全部状态的工单）
 ```
 
-默认连接参数在 `src/main/resources/application.yml`，可用环境变量覆盖：`DB_USERNAME`、`DB_PASSWORD`。
-
-### 2. 启动后端
+### 2. 启动后端（:8080）
 
 ```bash
 cd backend
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8080
+mvn spring-boot:run
 ```
 
-> 若本机环境变量存在 `SERVER__PORT` 会覆盖端口，命令行参数优先级更高，因此显式指定 8080。
+- 接口文档：<http://localhost:8080/swagger-ui.html>
+- 健康检查：<http://localhost:8080/actuator/health>
 
-- 接口文档：http://localhost:8080/swagger-ui.html
-- 健康检查：http://localhost:8080/actuator/health
-
-### 3. 登录验证
-
-```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"1000","password":"Cf@123456"}'
-```
-
-### 4. Redis（可选）
-
-```bash
-campusfix.cache.type = auto    # 默认：探测 Redis，不可用则降级
-                     = redis   # 强制 Redis（生产）
-                     = memory  # 强制进程内（无 Redis 的演示环境）
-```
-
-未安装 Redis 时服务仍可正常启动与使用，仅"重启后登录态保留 / 多实例共享"能力缺失，启动日志会打印 WARN。
-
-### 5. 启动前端（PC 端）
+### 3. 启动前端（:5173）
 
 ```bash
 cd frontend
-npm install       # 首次安装，.npmrc 已指向国内镜像
-npm run dev       # 启动后访问 http://localhost:5173
+npm install
+npm run dev
 ```
 
-| 地址 | 是什么 |
+打开 <http://localhost:5173> 即可使用。Vite 已配置 `/api`、`/ws` 代理到 8080，前端无需单独配置后端地址。
+
+### 测试账号
+
+初始密码统一为 `Cf@123456`（首次登录需修改）：
+
+| 账号 | 角色 |
 |---|---|
-| http://localhost:5173 | **前端页面**（登录 → 工作台 → 工单管理 → 用户管理） |
-| http://localhost:8080 | **纯 API 服务**，根路径 302 跳 Swagger |
-| http://localhost:8080/swagger-ui.html | 接口文档 |
+| `1000` | 系统管理员 |
+| `20001` / `20002` | 后勤管理员 |
+| `30001` / `30002` / `30003` | 维修人员（水电 / 空调 / 网络组） |
+| `2021001` ~ `2021005` | 学生 |
 
-Vite 已配置 `/api` 代理到 8080，前端不需要单独配后端地址。
+> 生产部署请通过环境变量覆盖数据库、JWT 密钥等配置（见 `application.yml` 与 `.env.example`），并务必修改默认密码。
 
-> **为什么直接开 8080 是一段 JSON？**
-> 8080 没有页面。未登录访问任意路径都会被 Spring Security 拦截，返回 `{"code":1001,"message":"未登录或登录已失效"}`——这是鉴权正常的响应，不是报错。要看界面请开 5173。
+---
 
-### 6. 启动日志判读（哪些是真问题）
-
-| 日志 | 含义 | 是否需处理 |
-|---|---|---|
-| `Started CampusFixApplication in x seconds` | 启动成功 | — |
-| `Redis 连接失败，降级为进程内令牌存储` | 本机没装 Redis，走降级 | 预期内，可忽略 |
-| `Process finished with exit code 130` | **128 + SIGINT**，即手动停止（IDE 停止按钮 / Ctrl+C） | 不是崩溃 |
-| `Process finished with exit code 1` + `Port 8080 was already in use` | 端口被占用 | 换端口或结束旧进程 |
-| `Using generated security password: ...` | 缺 `UserDetailsService`，Boot 自动建了内存用户 | **已修复**，见下 |
-| `Can not find table primary key in Class` | 关联表无 `@TableId`，MP 无法生成 `xxById` | **已修复**，见下 |
-
-两处早期告警的修复方式（2026-10-30）：
-
-1. `DbUserDetailsService`：提供数据库版 `UserDetailsService`，Boot 不再生成内存后门账号。
-2. 关联表 `SysUserRoleMapper` / `SysRolePermissionMapper` **不再继承 `BaseMapper`**，改为显式 `@Insert/@Delete/@Select`；复合主键表本就没有单主键，继承只会带来不可用的 `xxById` 和启动告警。
-
-### 7. 前后端分离配置与部署
-
-前端只通过 HTTP 访问后端，所有对外地址集中在 `frontend/src/config/env.ts`（由环境变量注入）；
-后端跨域与资源地址同样由环境变量控制。**不设这些变量时，行为与改造前完全一致。**
-
-| 场景 | 前端构建 | 后端启动 |
-|---|---|---|
-| 本地开发 | `npm run dev`（Vite 代理） | 默认即可 |
-| 同源部署 | `VITE_API_BASE_URL=/api/v1`、资源地址留空 | 默认即可 |
-| 分域部署 | `VITE_API_BASE_URL=https://api.x.com/api/v1`、`VITE_ASSET_BASE_URL=https://api.x.com` | `CORS_ALLOWED_ORIGINS=https://www.x.com`、`STORAGE_PUBLIC_BASE_URL=https://api.x.com` |
-| 容器编排 | `docker compose -f deploy/docker-compose.yml up -d --build` | 由编排注入 |
-
-完整说明见 **`CampusFix-前后端分离改造说明.md`**。
-
-## 六、测试账号
-
-初始密码统一为 **`Cf@123456`**（首次登录标记为需改密）。
-
-| 账号 | 角色 | 姓名 | 部门 |
-|---|---|---|---|
-| `1000` | 系统管理员 | 系统管理员 | 后勤保障处 |
-| `20001` / `20002` | 后勤管理员 | 王海涛 / 周文 | 后勤保障处 |
-| `30001` / `30002` / `30003` | 维修人员 | 张建国 / 李伟 / 王强 | 水电组 / 空调组 / 网络组 |
-| `2021001` ~ `2021005` | 学生 | 陈晓 / 刘洋 / 赵敏 / 孙磊 / 周婷 | — |
-
-## 七、核心实现要点
-
-面向 Java 17 的实现约定，新增代码请保持一致。
-
-| 主题 | 做法 |
-|---|---|
-| 分层 | `controller → service → mapper`，跨模块只调 Service 接口，不直接注入他人 Mapper |
-| 统一响应 | `Result{code,message,data,traceId}`；业务异常返回 HTTP 200 + 业务码，认证 401 / 权限 403 / 并发冲突 409 |
-| 异常处理 | `BizException(ResultCode)` + `@RestControllerAdvice` 全局兜底，参数校验错误合并为一条中文提示 |
-| 鉴权链路 | `JwtAuthenticationFilter` 解析 Bearer → `TokenStore` 取用户快照 → 写入 `SecurityContext`；接口用 `@PreAuthorize("hasAuthority('order:assign')")` |
-| 令牌可撤销 | access token 的 `jti` 与用户快照存 `TokenStore`；改密/禁用/改角色时 `logoutAll(userId)` 按用户批量吊销，解决"纯 JWT 踢不掉人" |
-| 参数对象 | DTO 用 `record`（Java 16+）+ `@Valid` + Jakarta 校验注解，Controller 只做绑定与转发 |
-| 语言特性边界 | 仅使用 Java 17 已定稿特性：`record`、文本块、`instanceof` 模式匹配、`switch` 表达式、`Stream.toList()`；**未使用** 21 的 SequencedCollection、`getFirst()`、字符串模板等 |
-| 持久层 | MyBatis-Plus 分页/乐观锁/防全表更新插件；`AuditMetaObjectHandler` 自动填充创建与更新时间；逻辑删除统一 `deleted` |
-| 时间处理 | 统一 `LocalDateTime` + `Asia/Shanghai`，序列化为 `yyyy-MM-dd HH:mm:ss`（`JacksonConfig`） |
-| 可观测 | 每个请求生成 `traceId` 写入 MDC 与响应头；`/actuator/health` 健康检查 |
-| 存储解耦 | `FileStorageService` 接口 + `local` 实现，二期接 OSS 只加实现类，不改业务代码 |
-
-### 工单状态机（本阶段重点）
-
-转换表集中在 `order/statemachine/OrderStateMachine`，17 个动作 / 18 条合法边，每条边是四要素：
-
-| 要素 | 作用 | 例子 |
-|---|---|---|
-| 目标状态 | 流转后落到哪 | `GRAB` → `ACCEPTED`（跳过「已分配」，抢单直达接单） |
-| 允许角色 | 谁能执行 | `REVIEW_PASS` 只允许 MANAGER / ADMIN；`ASSIGN` 额外放行 SYSTEM（自动派单用） |
-| 前置校验 | 业务前提 | `ACCEPT` 要求操作人就是被指派人；`CONFIRM` 要求操作人是报修人 |
-| 副作用 | 额外落库字段 | `GRAB` 写 `assignee_id` / `accepted_at`；`REWORK` 清空维修人并 `rework_count+1` |
-
-**三条纪律**：
-
-1. 业务代码**禁止** `order.setStatus()`，只能 `stateMachine.fire(orderId, action, operator, remark, params)`；
-2. 每次 `fire` 必须写 `repair_order_log` —— 时间轴、处理时长统计、责任追溯只认这张表；
-3. 并发靠 `version` 乐观锁：条件更新影响行数为 0 直接返回 HTTP 409，**不引入分布式锁**。
-
-`GET /orders/{id}` 会返回 `actions` 数组（当前登录者在该单上可做的动作），前端据此显示按钮；但真正的校验仍在 `fire` 里再做一遍 —— 前端只决定「看不看得见」。
-
-### 预约模型（本阶段重点）
-
-基线 A14 定的是「**报修人发起、维修工确认**」，落地顺序是：
+## 项目结构
 
 ```
-ACCEPTED
-  │ 维修工 POST /orders/{id}/schedules  （给 1–3 个窗口）
-  ▼
-OFFERED × N
-  │ 报修人 PUT /schedules/{sid}/select  （选中一个，同批其余自动 CANCELLED）
-  ▼
-SELECTED
-  │ 维修工 PUT /schedules/{sid}/confirm
-  ▼
-CONFIRMED  →  工单 PROCESSING，回写 plan_time
+CampusFix/
+├── backend/                     Spring Boot 单体（模块化分包）
+│   ├── src/main/java/com/campusfix/
+│   │   ├── common/              统一响应 · 异常 · 安全 · 配置
+│   │   ├── auth/                JWT 认证与令牌管理
+│   │   ├── system/              用户 · 角色 · 部门 · 参数 · 操作日志
+│   │   ├── order/               工单域：状态机 · 派单 · 预约 · 验收 · 评价投诉
+│   │   ├── message/             站内通知 · 工单聊天 · WebSocket 推送
+│   │   ├── stats/               数据统计聚合
+│   │   ├── asset/               位置树 · 设施档案 · 故障预警
+│   │   └── file/                文件上传与存储抽象（local / oss）
+│   ├── db/                      schema.sql + data.sql + 迁移脚本
+│   └── Dockerfile
+├── frontend/                    Vue 3 SPA
+│   ├── src/views/               页面（工作台按角色分发 · 工单 · 统计 · 日志 · 消息中心）
+│   ├── src/api/                 接口封装（统一响应解包 · 401 跳转）
+│   ├── src/ui/                  自建组件（图标 · 弹窗 · 轻提示 · 状态标签）
+│   ├── src/styles/theme.css     设计令牌与元件（换肤只改变量）
+│   └── Dockerfile
+├── deploy/                      Nginx 配置 + docker-compose.yml
+├── assets/                      分层架构图 · ER 图
+└── PROGRESS.md                  开发进度看板（随代码同步更新）
 ```
 
-两条关键口径：
+---
 
-1. **时段是意向窗口，不是排他占用**（A15）。维修时长不定，所以 `OFFERED` 允许重叠，
-   只有 `CONFIRMED` 才做「同维修工同日时段重叠」校验，冲突返回 `3003`。
-2. **改约可以发生在「已接单」和「处理中」两处**。维修工发起改约时新增一条带 `[改约]` 标记的
-   `OFFERED`，原时段先保留；报修人接受则新时段转 `CONFIRMED`，拒绝则 <b>整单退回抢单池</b>
-   （清空维修人、上门时间，重新分配）。
+## 核心设计亮点
 
-### 评价与投诉口径（本阶段重点）
+**状态机是唯一裁决方**
+所有工单状态变更只能走 `OrderStateMachine.fire()`，业务代码禁止直接 `setStatus()`；每次流转强制写流转日志（时间轴与统计的唯一数据源）；并发靠 `version` 乐观锁 CAS，不引入分布式锁——按日均 20 单的规模做恰当设计，拒绝过度工程。
 
-**评价**走「三项打分 → 加权 → 落库」，权重不写死：
+**通知与业务解耦**
+通知分发挂在状态机成功流转之后，失败只记日志绝不影响主流程；通知以数据库为唯一事实来源，WebSocket 只是加速。
 
-```
-总分 = (速度×w1 + 态度×w2 + 效果×w3) / (w1 + w2 + w3)
-w1/w2/w3 读 sys_config：evaluation.speed-weight / attitude-weight / effect-weight（默认 0.34 / 0.33 / 0.33）
-```
+**统计口径明确**
+完成类统计一律按 `finished_at`，取消与驳回不计入；评价总分提交时算好落库，权重调整不影响历史数据；投诉率固定小样本平滑公式——所有口径沉淀在设计文档，代码与文档一一对应。
 
-除以权重和是刻意为之：管理员把权重配成 `1:1:1` 时结果仍是平均分，不会算出 15 分制的怪数。
-**总分在提交时算好落库**，不每次统计重算 —— 权重后续调整不应改变历史评价。
+**可审计**
+关键写操作通过 `@OperLog` 注解全量落库（成败都记、参数脱敏），管理端可按人 / 模块 / 结果 / 时间检索。
 
-三条硬约束：
+---
 
-1. 只有**本单报修人**能评价，且工单必须「已完成」；一单一次，`evaluation.uk_order` 兜底并发重复提交；
-2. 评价成功给维修工 **+1 信誉分**（上限 100），走 `UserService.adjustCredit` 写流水；
-3. **匿名只对别人匿名**：本人、管理员、后勤看真名，维修工等看「匿名用户」，脱敏在后端完成，不把真名交给前端遮挡。
+## 文档索引
 
-**投诉**用状态而非文案决定是否扣分：
-
-| 状态 | 含义 | 是否扣分 |
-|---|---|---|
-| `PENDING` | 待受理 | — |
-| `PROCESSING` | 处理中（已受理，待核实） | — |
-| `RESOLVED` | 成立 | **扣维修工 10 分** |
-| `REJECTED` | 不成立 | 不扣 |
-
-这样「投诉成立率」与「信誉分变动」永远对得上，不会出现「意见写了成立但状态是驳回」的账实不符。
-投诉率沿用基线口径：`投诉数 / (总工单数 + 10) × 100%`。
-
-### 通知与聊天口径（2026-10-31 新增）
-
-**通知**以 `notification` 表为唯一数据源（未读数、列表、已读都查它），WebSocket 只做加速：
-
-- **触发点集中在状态机**：`OrderStateMachine.fire()` 成功流转后调用
-  `NotificationService.onTransition(order, action, to, operator, remark, param)`，按基线 §11.4
-  分发给报修人 / 维修人，**排除操作人本人**；通知失败只记 WARN，绝不影响主流程；
-- **快照陷阱**：传入的是流转前的 order——REWORK / RESCHEDULE_REJECT 要通知「原维修人」
-  正好用旧值；但 ASSIGN / TRANSFER 的新维修人必须从 `param.repairerId` 取
-  （流转前 assigneeId 还是 null，直接取会静默丢通知，已修复并回归）；
-- 打点不经过状态机，「维修人员已到达 / 开始维修」由 `RecordService` 直接发通知；
-- 前端角标只按 `NOTIFY` 帧计数；聊天消息本体另发 `CHAT` 帧给聊天面板刷新气泡（一帧两用会重复计数）。
-
-**聊天**以工单为会话单位（基线 §11.1），`chat_message` 表 + 1–500 字纯文本：
-
-- 相关方 = 报修人 / 当前维修人 / 管理员 / （部门含下级匹配的）后勤管理员，其余一律 2002；
-- 报修人 ↔ 维修人互发；管理员发送给当前对话另一方；维修人未接单时报修人发送返回 3001；
-- **拉取即已读**：`GET /orders/{id}/messages` 把发给我的未读置 1；同时给对方落一条
-  `CHAT` 类型通知（离线可补，在线经 WS 秒达）；
-- WebSocket：`/ws?token=<accessToken>` 握手鉴权（浏览器 WS 无法带 Authorization 头），
-  服务端只下行，上行仅作心跳；断线自动重连（2s→15s），连接失败不影响功能（REST 兜底）。
-
-### 统计与设施口径（2026-10-31 新增）
-
-**统计**（基线 §12 口径，`/stats/overview` 一次返回工作台全部数据）：
-
-- 数据范围与工单列表同规则：ADMIN 全部、MANAGER 本部门及下级（无部门退化为仅自报）、
-  REPAIRER 名下+自报、STUDENT 仅自报，在 SQL 层拼 scope；
-- 完成类统计（今日/本周/本月）一律按 `finished_at` 且状态 COMPLETED；取消、驳回不计入；
-- 平均处理时长 = AVG(finished_at−accepted_at)，平均维修时长 = AVG(finished_at−started_at)；
-- 故障类型 TOP5 按全部工单报修量（工作台排行语义）；楼栋分布 TOP5 按已完成工单（基线口径）；
-- 年 7,300 单规模下聚合全部毫秒级，不建预聚合表（基线 §12.4），也暂不加缓存。
-
-**设施联动**（基线 §9.2，待确认清单 #9 已确认）：挂状态机成功流转后同步——
-预约确认（PROCESSING）→ 设施 `REPAIRING`；验收完成（CONFIRM/AUTO_CONFIRM）→ `NORMAL`。
-返修、取消、无法维修**不改动**（设施确实没修好，保持维修中更诚实）。联动失败只记日志。
-
-**重复故障预警**（基线 §12.3）：同一楼栋 + 最近 7 天 + 同一故障类型 + 工单数 ≥5（取消/驳回不计），
-每天 08:00 扫描写 `fault_alert`，`uk_day_combo` 唯一索引保证同窗口幂等；阈值/窗口在
-`campusfix.stats.*` 可配；管理端工作台顶部横幅提示（NEW 状态），点「知道了」转 READ。
-
-### 操作日志口径（2026-10-31 新增）
-
-- `@OperLog(module, action)` 注解 + AOP 环切：记录 操作人 / 模块 / 操作 / 方法 / URI /
-  参数（脱敏 + 截断 2000）/ IP（X-Forwarded-For 优先）/ 成败 / 错误信息 / 耗时；
-- **成败都记**：业务异常也会落一条 status=0 的日志（error_msg 为异常消息）；
-- 日志任何失败只记 WARN，绝不影响业务事务；
-- 覆盖范围：工单提交与全部状态动作、预约六动作、验收/返修/延期、投诉提交与处理、
-  用户管理写操作、系统参数修改。查询类接口不打注解。
-
-### 维修异常态（挂起 / 恢复 / 无法维修）
-
-- 挂起：仅当前维修人、仅「处理中」，**必填原因**（基线 #11）；挂起时长自动累计、不计入维修用时；
-- 恢复：仅当前维修人、仅「挂起」；
-- 无法维修：仅当前维修人、「处理中 / 挂起」，**必填原因**，工单转「已驳回」并通知报修人（可转投诉）；
-- 前端在维修过程面板按状态显示按钮（挂起中显示橙色提示与恢复按钮），不走抽屉底部动作区。
-
-### 操作日志页与维修工日历使用说明（2026-10-31 新增）
-
-**操作日志页**（侧栏「业务管理 → 操作日志」，拥有 `log:list` 的账号可见）：
-
-- 筛选：操作人账号（精确）、模块下拉（从现有日志去重生成）、结果（成功/失败）、日期区间；
-- 行点击或「详情」按钮查看完整信息：操作人、接口、地址、IP、耗时、失败原因、
-  请求参数原文（已脱敏的 JSON，格式化展示）；
-- 日志由写接口的 `@OperLog` 注解自动产生，无需手工登记；查询接口只读。
-
-**维修工日历**：工单详情「选择维修人员」面板中，选中某人后自动展示其未来 7 天
-已确认上门时段（日期 + 时段 + 关联工单）与在办单数，指派/转派时避开冲突时间。
-维修工本人也可通过 `GET /repairers/{id}/calendar` 查看自己的日历（他人查询返回 403）。
-
-### 本次变更记录（2026-10-31 第 9 批）
-
-| 变更 | 影响范围 |
+| 文档 | 说明 |
 |---|---|
-| 新增 `GET /oper-logs`、`GET /oper-logs/modules`（`system/log` 包扩展） | 仅新增只读接口，`log:list` 权限码沿用 data.sql 预置值（ADMIN/MANAGER 已分配），无表结构变更 |
-| 新增 `GET /repairers/{id}/calendar`（DispatchService 扩展） | 仅新增只读接口，复用 `repair_schedule` 与 `repair_order` 表，无表结构变更 |
-| 新增前端「操作日志」页与路由 `/oper-logs` | 侧栏按 `log:list` 权限显隐，其余页面不受影响 |
-| 指派面板增加忙闲日历展示 | 仅详情抽屉指派面板 UI 增强，指派逻辑与接口契约不变 |
+| [`PROGRESS.md`](./PROGRESS.md) | 开发进度看板（随代码同步更新） |
+| [`CampusFix-项目注意文档.md`](./CampusFix-项目注意文档.md) | 设计基线：24 条业务决策、状态机、信誉值、统计口径（冲突时以此为准） |
+| [`CampusFix-系统设计说明书.md`](./CampusFix-系统设计说明书.md) | 系统设计：架构、模块、接口契约、25 张表 DDL、部署方案 |
+| [`CampusFix-前后端分离改造说明.md`](./CampusFix-前后端分离改造说明.md) | 前后端职责边界、跨域与资源地址、三种部署形态 |
+| [`assets/er-diagram.svg`](./assets/er-diagram.svg) | 数据库 ER 图 |
 
-### 本次变更记录（2026-10-31 第 10 批）
+## 路线图
 
-| 变更 | 影响范围 |
-|---|---|
-| 新增 `GET /stats/insight`（StatsService 扩展：维修工绩效排行 / 月度趋势 / 投诉汇总） | 仅新增只读接口；维修工判定沿用角色关联表（与指派候选同口径，修复过一次按工号误判）；无表结构变更 |
-| 新增数据统计页 `/stats`（侧栏「洞察」，`order:review` / `order:assign` 可见） | 原「Soon」占位移除；学生/维修工侧栏仍显示占位且后端 403 兜底 |
-| 新增消息中心页 `/notifications` | 任何登录用户可用；复用既有 `/notifications` 分页接口，无后端变更 |
-| 顶栏通知铃下拉新增「查看全部消息」入口；侧栏消息中心带未读角标 | 仅 UI 增强 |
+- [x] **v1（当前）**：工单全流程闭环 · 站内通知与聊天 · 数据统计与故障预警 · 操作日志 · 角色化工作台
+- [ ] **v2（规划）**：微信小程序端（目录已预留）· 统计报表导出 · 楼栋下钻分析
 
-### 本次变更记录（2026-10-31 第 13 批）
+## License
 
-| 变更 | 影响范围 |
-|---|---|
-| 工作台 4 张 KPI 卡与 2 张 Hero 浮动卡增加点击下钻 | 跳转 `/orders?status=...`（等待处理=待审核+待处理+已分配；进行中=已接单+处理中+挂起+待确认；完成类=已完成）；仅前端交互增强 |
-| 工单列表页支持 `?status=A,B,C` 多状态下钻 | 读取 `route.query.status` 初始化筛选并 watch 联动；后端 `parseStatuses` 逗号解析早已存在（非法状态自动过滤），**无后端变更** |
-| `vite.config.ts` 新增 `preview` 配置（5174 端口，同套代理） | 生产构建预览路径；对严格 CSP 环境（内嵌预览面板）更友好，实测产物零 eval |
-
-### 卡片下钻使用说明（2026-10-31 新增）
-
-工作台的 4 张指标卡、Hero 区 2 张浮动卡均可点击，直达工单管理并自动套用对应状态筛选：
-
-| 卡片 | 跳转 |
-|---|---|
-| 工单总数 | 全部工单 |
-| 等待处理 | 待审核 + 待处理 + 已分配 |
-| 进行中的工单 | 已接单 + 处理中 + 挂起 + 待确认 |
-| 平均处理时长 | 已完成 |
-| 浮动卡「已完成 / 等待处理」 | 同上对应筛选 |
-
-最近工单列表、快捷入口原有跳转保持不变；多状态筛选在后端做了合法性过滤（未知状态自动忽略）。
-
-### 统计页与消息中心使用说明（2026-10-31 新增）
-
-**数据统计页**（侧栏「洞察 → 数据统计」）：
-
-- 谁能看：后勤管理员与系统管理员（后端 `/stats/insight` 按 `order:review` / `order:assign` 鉴权；
-  后勤的数据范围为**本部门及下级的维修工与其部门工单**，管理员为全校）；
-- 维修工绩效排行：完成单数、三维加权平均分（同评价口径，权重读 `sys_config`）、
-  好评率（总分 ≥4 占比）、平均处理时长；无评价的维修工按「未评价」展示并排后；
-- 月度趋势：近 6 个月新增（红柱）与完成（绿柱）对比；
-- 投诉结构：待受理 / 处理中 / 已成立 / 不成立四态分布与投诉率（口径 `投诉数 / (总单数 + 10)`）。
-
-**消息中心页**（侧栏「洞察 → 消息中心」，或顶栏通知铃下拉「查看全部消息」）：
-
-- 全量通知列表，支持按类型（工单 / 聊天 / 投诉 / 系统）与「只看未读」筛选、分页；
-- 点击未读项自动标记已读并跳转对应工单；「全部已读」一键清零角标。
-
-
-
-
-
-
-## 八、前端设计规范
-
-UI 基于**自建设计系统**（`frontend/src/styles/theme.css`，最初移植自同作者的 DhuStore，2026-10-30 重写升级），不引入任何组件库或图表库。
-新增页面请复用下列类名，不要另起一套样式；换肤只需改变量。
-
-### 设计令牌（改这里就能整体换肤）
-
-| 变量 | 值 | 用途 |
-|---|---|---|
-| `--brand` / `--brand-d` / `--brand-l` | `#e63946` / `#c42532` / `#fdecee` | 主品牌色、按下态、浅底 |
-| `--brand-2` / `--accent` / `--violet` / `--teal` | `#ff7a59` / `#4f6ef7` / `#7c5cfc` / `#0ea5a4` | 辅助色：暖橙、蓝、紫、青 |
-| `--ink` / `--ink-2` / `--ink-3` | `#171a21` / `#4f5563` / `#8a90a0` | 三级文字墨色 |
-| `--line` / `--line-2` / `--bg` | `#e6e8ef` / `#f0f2f7` / `#f4f5fa` | 发丝边框、次级分隔、页面底色 |
-| `--r` / `--r-lg` / `--r-sm` | `14px` / `20px` / `10px` | 卡片 / 浮层 / 控件圆角 |
-| `--sh-1` / `--sh-2` / `--sh-3` | 三级投影 | 卡片 / 悬停 / 浮层 |
-| `--sidebar-w` / `--hdr` | `246px` / `64px` | 侧栏宽度、顶栏高度 |
-
-> **换品牌色**：只改 `--brand*` 变量即可（例如换回蓝色 `#185FA5`），其余样式自动跟随。
-
-### 常用元件
-
-| 类名 | 说明 |
-|---|---|
-| `.card` / `.panel` | 白底 + 14px 圆角 + 一级投影；`.panel-hd` / `.panel-bd` 为面板头与内容 |
-| `.btn` `.btn-primary` `.btn-ghost` `.btn-danger` `.btn-sm` | 38px 高、10px 圆角；`btn-sm` 32px；主按钮为品牌红渐变 |
-| `.field` | 输入框 / 下拉，40px 高；聚焦时品牌红光晕 |
-| `.tag` `.tag-brand` `.tag-ok` `.tag-warn` `.tag-crit` `.tag-ink` | 22px 高、11.5px 字号的状态标签 |
-| `.tablewrap` `.tbl` `.tbl-hd` | 数据表格（表头 `#f8f9fc`、13.5px 行高、悬停 `#fafbfd`） |
-| `.pager` `.pg` | 分页按钮 |
-| `.kpis` `.kpi` | KPI 卡片，数值 28px/800、`letter-spacing:-.9px` |
-| `.side` `.navitem` `.topbar` `.content` | 应用外壳（246px 深色渐变侧栏、64px 毛玻璃顶栏） |
-| `.empty` `.spin` `.toast` `.mask` `.modal` | 空态、加载、轻提示、弹窗 |
-| `<Icon name="..." />` | 24×24 线性图标，1.7 描边，共 38 个，颜色继承 `currentColor` |
-
-### 交互约定
-
-- 轻提示：`toastOk(msg)` / `toastErr(msg)`（`src/ui/toast.ts`）
-- 二次确认：`await confirmDialog({ title, message, danger })`（`src/ui/dialog.ts`）
-- 不再使用 `ElMessage` / `ElMessageBox`；Element Plus 已从依赖中移除
-
-### 界面改版记录
-
-界面改版共三批（2026-10-30 两批、2026-10-31 一批），**后端接口与数据契约均未变化**，`npm run build` 通过。
-
-#### 改版一：整体视觉升级
-
-目标：解决页面只有文字、层级单薄的问题，在不引入组件库 / 图表库的前提下重建视觉体系。
-
-| 范围 | 改动 |
-|---|---|
-| 设计系统 `theme.css` | 重写令牌与基础元件：品牌红 + 冷调墨色、深色渐变侧栏、毛玻璃顶栏、14–24px 圆角、分层阴影；补齐按钮 / 表单 / 标签 / 表格 / 分页 / 弹窗 / Toast / 空态 / 加载态 / 登录页样式，保留原类名以兼容旧页面 |
-| 应用外壳 `LayoutView` | 分组导航（概览 / 业务管理 / 洞察）、顶栏面包屑、全局搜索（回车跳转 `/orders?keyword=…`）、通知铃、用户下拉菜单、侧栏用户卡片与退出确认 |
-| 工作台 `DashboardView` | Hero 问候区（日期、待处理数、内联 SVG 插画、悬浮数据卡）、4 张 KPI 卡、近 7 日趋势柱状图、状态分布环形图（`conic-gradient`）、分类 TOP5、最近 8 条工单；统计来自真实接口（最多取 100 条样本，页面已标注「最近 100 条」） |
-| 工单管理 `OrderListView` | 页面标题区、状态概览条、工具栏与表格视觉升级；支持 `?keyword=` 搜索联动、`?id=` 直达详情抽屉 |
-| 用户管理 `UserListView` | 本页概览条、角色配色头像、信誉分进度条、状态开关、9 列信息重排 |
-| 登录页 `LoginView` | 输入框图标、密码显隐切换、按角色配色的测试账号卡片、欢迎语与页脚 |
-| 详情 / 弹窗 | 详情抽屉增加状态横幅（优先级 / 紧急度 / 返工统计）与键值卡片；新建工单弹窗紧急度图标化 |
-| 图标与启动页 | `Icon.vue` 新增 bell、plus、eye、pin、wrench、sparkles、building、phone 等；`index.html` 增加深色启动闪屏，Vue 挂载后自动替换 |
-
-设计约束：
-
-- 不新增运行时依赖（无 Element Plus / ECharts），图表为手写 SVG / CSS；
-- 设计令牌集中在 `src/styles/theme.css`，换品牌色只需改 `--brand*`；
-- 功能与后端契约保持原样，仅做展示层增强。
-
-#### 改版二：工单管理「故障分类优先」
-
-背景：原页面直接进入密集表格，分类仅作为表格中的一列，不便于按类别浏览。
-
-改动：
-
-- 页面顶部新增「故障分类」面板，展示「全部工单 + 9 个启用分类」共 10 张可点击卡片；
-- 每张卡片显示分类专属图标、名称、该分类工单数（按当前页签「我的工单 / 抢单池」从后端逐类读取 `total`，不是本页样本）；
-- 点击卡片按 `categoryId` 筛选列表；选中态显示品牌红描边与「当前：xx / 查看全部」；再次点击同一卡片或「查看全部」取消筛选；
-- 列表空态增加分类场景文案；新增工单、处理工单、刷新后分类计数同步更新；
-- 响应式：桌面 5 列 / 1024px 4 列 / 平板 3 列 / 手机 2 列；手机端选择分类后自动滚动到列表；
-- 表格「类型」列图标改为按分类配色，与顶部卡片一致。
-
-接口说明：
-
-- 复用现有 `GET /api/v1/orders?categoryId={id}&page=1&size=1` 获取各类 `total`，**无需新增后端接口**；
-- `GET /api/v1/categories` 获取分类列表（`id / name / code / deptName`）；
-- 每次进入页面或切换页签并发 10 个轻量查询（`size=1`），不随关键词 / 状态筛选重复请求。
-
-涉及文件：`frontend/src/views/OrderListView.vue`、`frontend/src/ui/Icon.vue`（新增 droplet / wifi / snowflake / door / lightbulb / sofa）。
-
-#### 改版三：客户端工作台轻量化（2026-10-31）
-
-背景：学生与维修人员原先和管理员共用同一套工作台，Hero 插画、KPI、趋势图、分类排行、平台建设进度等管理端内容与大量图标让客户端显得严肃、信息过载。
-
-改动：
-
-- 工作台按角色分流：`STUDENT` 渲染 `StudentHome`，`REPAIRER` 渲染 `RepairerHome`，`MANAGER / ADMIN` 保留原工作台；
-- 学生工作台：浅暖色 Hero + 一句进度提示 + 单一「提交报修」主按钮；焦点工单卡直达当前进度；待处理 / 处理中 / 待确认 / 已完成四张数字卡；最近报修与三步报修流程；无装饰插画与图表；
-- 维修人员工作台：浅蓝 Hero + 「我的任务 / 抢单池」两个带数量的主按钮；今日已完成、本周完成、待学生确认；待接单 / 进行中 / 待验收 / 可抢单四张数字卡；按优先级排好的任务列表（含「去接单 / 去处理 / 查看」动作）与抢单池预览；
-- 客户端应用外壳简化：侧栏仅保留首页 / 我的报修（我的任务）/ 消息中心，隐藏面包屑、管理分组、数据统计与「Soon」占位、接口文档入口；搜索占位与页头标题按角色改写；
-- 工单列表支持 `?tab=pool` 深链接，维修人员可直接从工作台进入抢单池；页签切换同步 URL；
-- 全程复用 `getStatsOverview`、`pageOrders`、`pagePool`，**后端接口与数据契约未变化**。
-
-涉及文件：`frontend/src/views/dashboards/StudentHome.vue`、`frontend/src/views/dashboards/RepairerHome.vue`（新增），`frontend/src/views/DashboardView.vue`、`frontend/src/views/LayoutView.vue`、`frontend/src/views/OrderListView.vue`。
-
-#### 验证记录
-
-- `npm run build` 通过（165 个模块，约 1.7s）；
-- 已检查 1440×1000、1366×768、1024×768、390×844 四档宽度截图；
-- 顶栏搜索「门锁」→ `/orders?keyword=门锁` 并正确筛选出结果；
-- 点击「水电故障」→ 列表由 14 条变为 3 条；点击 0 条的「公共设施」→ 显示「该分类下暂无工单」空态；
-- 详情抽屉、`?id=` 直达、新建工单弹窗、用户管理页面回归正常。
-- 客户端改版另检查 1440×1000、1024×768、390×844 三档：学生「提交报修」弹窗、维修人员「我的任务 / 抢单池」跳转与 `?tab=pool` 页签均正常；管理员工作台无回归。
-
-## 九、文档索引
-
-| 文档 | 用途 |
-|---|---|
-| `CampusFix.md` | 原始需求 |
-| `CampusFix-项目注意文档.md` | 设计基线：24 条决策、状态机、信誉值、统计口径 |
-| `CampusFix-系统设计说明书.md` | 架构、模块、接口、25 张表 DDL、部署、非功能、风险 |
-| `CampusFix-前后端分离改造说明.md` | 前后端职责边界、接口契约、跨域与资源地址、三种部署形态、迁移变更与回滚 |
-| `assets/er-diagram.svg` | 数据库 ER 图（矢量） |
-
-## 十、与文档的偏差记录
-
-| 日期 | 偏差 | 原因 | 影响 |
-|---|---|---|---|
-| 2026-10-30 | 新增 `TokenStore` 抽象：Redis 不可用时自动降级为进程内存储 | 本机无 Redis 且无法联网下载二进制，需保证"本地跑通" | 仅影响重启保留登录态与多实例；生产设 `cache.type=redis` 即与设计一致 |
-| 2026-10-30 | 前端未采用 Element Plus / ECharts：UI 使用自建设计系统，工作台图表为手写 SVG / CSS | 统一品牌视觉、减少依赖；当前图表只需基础可视化 | 功能一致；组件与图表能力以 `theme.css`、`src/ui/` 为准，后端接口不变 |
-| 2026-10-30 | 状态文案与配色未抽到 `constants/orderStatus.ts`，实际集中在 `src/ui/OrderStatusTag.vue` | 目前只有工作台、工单列表、详情抽屉三处用到，抽文件的收益低于多维护一份映射 | 设计说明书 §8「前端规范」该条与代码不符；后续统计页或小程序若要复用，需先把映射迁到 `constants/` |
-
-## 十一、下一步
-
-1. **数据增强**：统计页导出（CSV/Excel）、楼栋分布下钻（点击楼栋看工单列表）
-2. **微信小程序端**（二期，文档中已预留位置）
-
-> 第 1 阶段功能已全部落地：报修 → 审核 → 派单/抢单 → 预约 → 维修（含挂起/无法维修）→ 确认/返修 → 完成 → 评价/投诉 → 消息触达 → 数据洞察（工作台 + 独立统计页）→ 操作可审计 → 派单有日历辅助 → 消息有中心页。
+[MIT](./LICENSE)
