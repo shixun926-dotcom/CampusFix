@@ -5,10 +5,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * 开发期入口：后端本身不提供页面，根路径直接引导到接口文档。
+ * 根路径入口：转发到前端 SPA 首页 index.html。
  *
- * <p>部署时前端由 Nginx 托管在 "/"，请求不会落到这里；
- * 此控制器只解决"直接访问 http://localhost:8080 看到一段 401 JSON"的困惑。</p>
+ * <p>一键启动模式下，后端在 8080 端口同时托管前端构建产物（见
+ * {@code StaticResourceConfig}），根路径直接打开前端登录页；
+ * 接口文档仍可通过 {@code /swagger-ui.html} 访问。</p>
  */
 @Hidden
 @Controller
@@ -16,6 +17,6 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/swagger-ui.html";
+        return "forward:/index.html";
     }
 }
