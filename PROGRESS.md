@@ -681,7 +681,6 @@ UI 基于**自建设计系统**（`frontend/src/styles/theme.css`，最初移植
 | `backend/.../web/HomeController.java` | 根路径 `/` 由 `redirect:/swagger-ui.html` 改为 `forward:/index.html` |
 | `backend/.../config/SecurityConfig.java` | 鉴权边界改为「`/api/v1/auth/login\|refresh` 放行 → `/api/v1/**` 鉴权 → 其余放行」 |
 | `backend/pom.xml` | `maven-resources-plugin` 在 process-resources 阶段复制 `frontend/dist` 进 jar 的 `static/`（属性 `frontend.dist.skip` 可控） |
-| `start-frontend.bat` | 前端独立启动脚本（可选热更新模式用） |
 
 **验证结果**：`mvn spring-boot:run` 与 `java -jar` 两条路径下，`/`、`/assets/*.js`、`/student`、`/admin` 均返回 200；登录接口返回真实 JWT；未授权 `/api/v1/**` 返回 401。
 
