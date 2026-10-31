@@ -53,12 +53,13 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/", "/index.html", "/favicon.ico").permitAll()
+                // 无需鉴权的公开接口：登录 / 刷新令牌
                 .requestMatchers("/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
-                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/files/**", "/actuator/health", "/error").permitAll()
-                .requestMatchers("/ws/**").permitAll()
-                .anyRequest().authenticated())
+                // 需要鉴权的业务接口：其余 /api/v1/**
+                .requestMatchers("/api/v1/**").authenticated()
+                // 其余路径（静态资源、SPA 前端路由 /student /repairer /admin 等）全部放行，
+                // 页面级访问控制由前端路由守卫 + 后端 API 鉴权共同保证
+                .requestMatchers("/**").permitAll())
             .exceptionHandling(e -> e
                 .authenticationEntryPoint((req, res, ex) -> {
                     res.setStatus(401);
