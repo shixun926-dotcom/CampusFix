@@ -113,17 +113,29 @@ mysql -uroot -p < db/schema.sql    # 建库建表（25 张）
 mysql -uroot -p < db/data.sql      # 测试数据（角色账号、覆盖全部状态的工单）
 ```
 
-### 2. 启动后端（:8080）
+### 2. 启动后端（:8080，一键启动）
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
+后端在 8080 端口**同时托管前端构建产物**，启动后浏览器直接打开 <http://localhost:8080> 即可使用完整应用，无需再单独启动前端服务。
+
+- 应用入口：<http://localhost:8080>
 - 接口文档：<http://localhost:8080/swagger-ui.html>
 - 健康检查：<http://localhost:8080/actuator/health>
 
-### 3. 启动前端（:5173）
+> 在 IntelliJ IDEA 中打开项目，直接运行 `CampusFixApplication`（或 `mvn spring-boot:run`）即可一键启动，无需其他手动步骤。
+
+前端静态资源按以下优先级加载（见 `StaticResourceConfig`）：
+
+1. `frontend/dist` 目录（相对后端模块，开发时改动即时生效）；
+2. jar 内 `classpath:/static/`（`mvn package` 打包时由 `maven-resources-plugin` 自动复制进 jar，`java -jar` 可独立运行）。
+
+### 3. （可选）前端热更新开发模式（:5173）
+
+需要修改前端代码并热更新调试时，才单独启动 Vite：
 
 ```bash
 cd frontend
@@ -131,7 +143,7 @@ npm install
 npm run dev
 ```
 
-打开 <http://localhost:5173> 即可使用。Vite 已配置 `/api`、`/ws` 代理到 8080，前端无需单独配置后端地址。
+打开 <http://localhost:5173> 即可使用。Vite 已配置 `/api`、`/ws` 代理到 8080，前端无需单独配置后端地址。**日常使用无需此步骤**，直接访问 8080 即可。
 
 ### 测试账号
 
