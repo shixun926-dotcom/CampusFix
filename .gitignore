@@ -1,0 +1,33 @@
+# build
+target/
+*.jar
+!*/.mvn/wrapper/maven-wrapper.jar
+backend/compile*.log
+backend/run.log
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# node
+node_modules/
+dist/
+dist-*/
+.pnpm-store/
+
+# os
+.DS_Store
+Thumbs.db
+
+# local data
+campusfix-data/
+
+# local secrets（本地私有配置，不要提交）
+backend/src/main/resources/application-dev.yml
+.env
+
+# agent workspace
+.workbuddy/
+.graphflow/

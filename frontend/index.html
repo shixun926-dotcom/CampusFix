@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#12151c" />
+    <meta name="description" content="CampusFix 校园设施报修与工单管理平台：报修、审核、派单、维修、验收全过程线上化。" />
+    <title>CampusFix · 校园设施报修与工单管理平台</title>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      #boot {
+        position: fixed; inset: 0; display: grid; place-items: center;
+        background:
+          radial-gradient(760px 480px at 74% 4%, rgba(230, 57, 70, .32), transparent 62%),
+          radial-gradient(560px 380px at 12% 96%, rgba(79, 110, 247, .16), transparent 62%),
+          linear-gradient(150deg, #191d26 0%, #11141b 50%, #0c0f14 100%);
+        font-family: "Segoe UI", system-ui, -apple-system, "Microsoft YaHei UI", sans-serif;
+        color: #fff;
+      }
+      #boot .boot-inner { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+      #boot .boot-logo {
+        width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center;
+        background: linear-gradient(140deg, #f0505c, #e63946 50%, #c42532);
+        font-size: 19px; font-weight: 800; letter-spacing: .5px;
+        box-shadow: 0 14px 36px rgba(230, 57, 70, .42), inset 0 1px 0 rgba(255,255,255,.3);
+        animation: bootPulse 1.8s ease-in-out infinite;
+      }
+      #boot .boot-name { font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
+      #boot .boot-sub { font-size: 12px; color: #8b93a3; margin-top: -10px; letter-spacing: .4px; }
+      #boot .boot-bar { width: 132px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.1); overflow: hidden; margin-top: 4px; }
+      #boot .boot-bar i {
+        display: block; width: 40%; height: 100%; border-radius: 3px;
+        background: linear-gradient(90deg, transparent, #ff7a68, transparent);
+        animation: bootSlide 1.2s ease-in-out infinite;
+      }
+      @keyframes bootPulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+      @keyframes bootSlide { 0% { transform: translateX(-120%); } 100% { transform: translateX(360%); } }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="boot">
+        <div class="boot-inner">
+          <div class="boot-logo">CF</div>
+          <div class="boot-name">CampusFix</div>
+          <div class="boot-sub">校园设施报修与工单管理平台</div>
+          <div class="boot-bar"><i></i></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

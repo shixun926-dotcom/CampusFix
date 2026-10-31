@@ -1,0 +1,128 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: campusfix
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 数据库地址由 DB_URL 覆盖：本机默认 127.0.0.1，容器/独立部署时指向实际主机
+    url: '${DB_URL:jdbc:mysql://127.0.0.1:3306/campusfix?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true}'
+    username: ${DB_USERNAME:root}
+    # 本地开发密码放 application-dev.yml（不入库）；部署时用环境变量 DB_PASSWORD 覆盖
+    password: '${DB_PASSWORD:change-me}'
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: CampusFixHikari
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3000ms
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.campusfix
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    # Redis 连通性由 TokenStoreConfig 在启动时探测并降级，
+    # 不使用 Actuator 的 Redis 健康项，避免无 Redis 的本地环境整体判为 DOWN
+    redis:
+      enabled: false
+
+campusfix:
+  # 令牌存储：auto（默认，探测 Redis，不可用则降级进程内）/ redis / memory
+  cache:
+    type: ${CACHE_TYPE:auto}
+  jwt:
+    secret: ${JWT_SECRET:CampusFix@2026#SecretKeyForJwtHS256MustBeLongEnough32Bytes}
+    access-ttl-seconds: 7200
+    refresh-ttl-seconds: 604800
+  # 跨域白名单：前后端分域部署时用 CORS_ALLOWED_ORIGINS 放行前端域名（逗号分隔）
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+    max-age: 3600
+  # 对外源站：配置后 Swagger 的 Try it out 会打到该地址
+  api:
+    server-url: ${API_SERVER_URL:}
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local-path: ${STORAGE_PATH:D:/campusfix-data/upload}
+    local-url-prefix: /files
+    # 资源对外基地址：为空返回 /files/xxx 相对路径（同源部署）；
+    # 前后端分域或接 CDN 时填 https://api.example.com
+    public-base-url: ${STORAGE_PUBLIC_BASE_URL:}
+    oss:
+      endpoint: ${OSS_ENDPOINT:}
+      access-key-id: ${OSS_AK:}
+      access-key-secret: ${OSS_SK:}
+      bucket: ${OSS_BUCKET:}
+  order:
+    auto-assign-hours: 24
+    auto-confirm-days: 3
+    max-images: 9
+    warranty-days: 3
+  credit:
+    init-score: 100
+    deduct-score: 10
+    limit-threshold: 60
+  stats:
+    # 重复故障预警（基线 §12.3）：同一楼栋 + 最近 N 天 + 同一故障类型 + ≥ 阈值单
+    fault-alert-days: 7
+    fault-alert-threshold: 5
+    fault-alert-cron: ${FAULT_ALERT_CRON:0 0 8 * * ?}
+  evaluation:
+    speed-weight: 0.34
+    attitude-weight: 0.33
+    effect-weight: 0.33
+
+logging:
+  level:
+    root: info
+    com.campusfix: debug
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

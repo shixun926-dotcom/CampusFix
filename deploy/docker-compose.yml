@@ -1,0 +1,85 @@
+# CampusFix 前后端分离部署编排
+#
+# 用法（在仓库根目录）：
+#   cp .env.example .env      # 按需修改密码与端口
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#
+# 访问：
+#   前端 http://localhost:8081
+#   后端 http://localhost:8080 （API 前缀 /api/v1，文档 /swagger-ui.html）
+#
+# 说明：本编排让前端容器内的 Nginx 反代 /api 与 /files 到后端，
+# 浏览器只看到前端一个域，因此无需打开跨域、图片相对路径也能解析。
+# 若前后端要部署到不同域名，见 deploy/nginx.conf 末尾的分域说明。
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: campusfix-mysql
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-campusfix2026}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-campusfix}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 首次启动自动导入建表与测试数据（文件名前缀保证顺序）
+      - ../backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../backend/db/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    # 默认不占用宿主机 3306，避免与本机 MySQL 冲突；需要连库排查时放开
+    # ports:
+    #   - "3307:3306"
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: campusfix-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-campusfix}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true"
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-campusfix2026}
+      JWT_SECRET: ${JWT_SECRET:-CampusFix@2026#SecretKeyForJwtHS256MustBeLongEnough32Bytes}
+      # 单容器部署无需 Redis 共享登录态，默认用进程内存储；要多实例再挂 Redis 并设 redis
+      CACHE_TYPE: ${CACHE_TYPE:-memory}
+      STORAGE_TYPE: local
+      STORAGE_PATH: /app/data/upload
+      # 同源部署留空即可；前后端分域时填后端对外地址
+      STORAGE_PUBLIC_BASE_URL: ${STORAGE_PUBLIC_BASE_URL:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8081}
+      API_SERVER_URL: ${API_SERVER_URL:-}
+      SERVER_PORT: 8080
+      LOGGING_LEVEL_COM_CAMPUSFIX: info
+    volumes:
+      - upload-data:/app/data/upload
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        # 同源模式：由本容器 nginx 反代，构建期不需要知道后端域名
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+        VITE_ASSET_BASE_URL: ${VITE_ASSET_BASE_URL:-}
+    container_name: campusfix-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8081}:80"
+
+volumes:
+  mysql-data:
+  upload-data:

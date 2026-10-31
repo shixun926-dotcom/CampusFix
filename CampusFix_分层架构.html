@@ -1,0 +1,92 @@
+<svg viewBox="0 0 680 566" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>CampusFix 分层架构图</title>
+<desc>自下而上为数据与中间件、Spring Boot 业务模块、Vue 前端、Nginx 接入层四层结构。</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<rect x="40" y="40" width="600" height="62" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text x="56" y="56" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="500" fill="#444441">接入层</text>
+<rect x="170" y="64" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="223" y="80" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">Nginx 反代</text>
+<rect x="285" y="64" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="338" y="80" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">静态资源 / TLS</text>
+<rect x="400" y="64" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="453" y="80" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">WS 升级 / 限流</text>
+<rect x="515" y="64" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="568" y="80" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">gzip / 缓存</text>
+
+<line x1="397" y1="104" x2="397" y2="122" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="40" y="124" width="600" height="62" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text x="56" y="140" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="500" fill="#444441">表现层 Vue 3</text>
+<rect x="170" y="148" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="223" y="164" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">学生端</text>
+<rect x="285" y="148" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="338" y="164" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">维修端</text>
+<rect x="400" y="148" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="453" y="164" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">管理后台</text>
+<rect x="515" y="148" width="107" height="32" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="568" y="164" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">路由 / 状态 / 图表</text>
+
+<line x1="397" y1="188" x2="397" y2="206" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="40" y="208" width="600" height="252" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text x="56" y="226" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="500" fill="#444441">应用层 Spring Boot 3</text>
+<rect x="170" y="236" width="452" height="30" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+<text x="396" y="251" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">Controller · 鉴权 · 参数校验 · 幂等 · 统一响应</text>
+
+<rect x="170" y="274" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="223" y="289" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">认证鉴权</text>
+<rect x="285" y="274" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="338" y="289" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">用户与角色</text>
+<rect x="400" y="274" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="453" y="289" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">组织与部门</text>
+<rect x="515" y="274" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="568" y="289" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">系统配置</text>
+
+<rect x="170" y="310" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="223" y="325" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">报修工单</text>
+<rect x="285" y="310" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="338" y="325" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">派单分配</text>
+<rect x="400" y="310" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="453" y="325" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">维修预约</text>
+<rect x="515" y="310" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="568" y="325" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">维修过程</text>
+
+<rect x="170" y="346" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="223" y="361" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">确认验收</text>
+<rect x="285" y="346" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="338" y="361" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">评价投诉</text>
+<rect x="400" y="346" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="453" y="361" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">设施档案</text>
+<rect x="515" y="346" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="568" y="361" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">消息通知</text>
+
+<rect x="170" y="382" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="223" y="397" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">数据统计</text>
+<rect x="285" y="382" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="338" y="397" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">文件服务</text>
+<rect x="400" y="382" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="453" y="397" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">操作日志</text>
+<rect x="515" y="382" width="107" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="568" y="397" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">定时任务</text>
+
+<rect x="170" y="420" width="452" height="32" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+<text x="396" y="436" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#042C53" text-anchor="middle" dominant-baseline="central">Mapper · MyBatis-Plus · 乐观锁 · 数据权限拦截</text>
+
+<line x1="397" y1="462" x2="397" y2="482" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="40" y="484" width="600" height="62" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text x="56" y="500" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="500" fill="#444441">数据与中间件</text>
+<rect x="170" y="508" width="107" height="32" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="223" y="524" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#04342C" text-anchor="middle" dominant-baseline="central">MySQL 8</text>
+<rect x="285" y="508" width="107" height="32" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="338" y="524" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#04342C" text-anchor="middle" dominant-baseline="central">Redis</text>
+<rect x="400" y="508" width="107" height="32" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="453" y="524" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#04342C" text-anchor="middle" dominant-baseline="central">阿里云 OSS</text>
+<rect x="515" y="508" width="107" height="32" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="568" y="524" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#04342C" text-anchor="middle" dominant-baseline="central">WebSocket</text>
+</svg>

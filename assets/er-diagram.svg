@@ -1,0 +1,517 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1060" width="100%" role="img" aria-labelledby="erdTitle erdDesc" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI','Microsoft YaHei',sans-serif">
+<title id="erdTitle">CampusFix 数据库 ER 图</title>
+<desc id="erdDesc">包含平台域 6 张、工单域 10 张、资产域 4 张核心实体，标注主键、外键、唯一索引与一对多、一对一、多对多关系基数。</desc>
+
+<defs>
+<marker id="arw" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.card{fill:#FFFFFF;stroke:#B4B2A9;stroke-width:0.8}
+.rel{fill:none;stroke:#5F5E5A;stroke-width:1.1}
+.rel-bus{fill:none;stroke:#888780;stroke-width:1.1}
+.attr{font-size:10.5px;fill:#2C2C2A}
+.ent{font-size:11.5px;font-weight:500}
+.card1{font-size:9.5px;fill:#5F5E5A;font-weight:500}
+.hdr-t{font-size:12px;font-weight:500;fill:#2C2C2A}
+.tiny{font-size:9.5px;fill:#5F5E5A}
+.note{font-size:10px;fill:#5F5E5A}
+</style>
+</defs>
+
+<!-- ============ 平台域 ============ -->
+<rect x="28" y="52" width="252" height="706" rx="12" fill="#EEEDFE" opacity="0.35"/>
+<text class="hdr-t" x="40" y="46" font-size="11" fill="#534AB7">平台域</text>
+
+<g>
+<rect class="card" x="40" y="80" width="200" height="96" rx="8"/>
+<path d="M40,88 Q40,80 48,80 H232 Q240,80 240,88 V106 H40 Z" fill="#EEEDFE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="52" y="97" fill="#26215C">sys_dept</text>
+<rect x="50" y="111" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="60" y="120.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="78" y="121">id</text>
+<rect x="50" y="127" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="136.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="137">parent_id</text>
+<text class="attr" x="78" y="153">name</text>
+<text class="attr" x="78" y="169">type</text>
+</g>
+
+<g>
+<rect class="card" x="40" y="196" width="230" height="144" rx="8"/>
+<path d="M40,204 Q40,196 48,196 H262 Q270,196 270,204 V222 H40 Z" fill="#EEEDFE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="52" y="213" fill="#26215C">sys_user</text>
+<rect x="50" y="227" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="60" y="236.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="78" y="237">id</text>
+<rect x="50" y="243" width="20" height="13" rx="3" fill="#F1EFE8" stroke="#888780" stroke-width="0.6"/>
+<text x="60" y="252.5" font-size="8" fill="#444441" text-anchor="middle">UK</text>
+<text class="attr" x="78" y="253">username</text>
+<text class="attr" x="78" y="269">student_no / staff_no</text>
+<rect x="50" y="275" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="284.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="285">dept_id</text>
+<text class="attr" x="78" y="301">phone</text>
+<text class="attr" x="78" y="317">credit_score</text>
+<text class="attr" x="78" y="333">status</text>
+</g>
+
+<g>
+<rect class="card" x="40" y="360" width="190" height="64" rx="8"/>
+<path d="M40,368 Q40,360 48,360 H222 Q230,360 230,368 V386 H40 Z" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="52" y="377" fill="#444441">sys_user_role</text>
+<rect x="50" y="391" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="400.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="401">user_id</text>
+<rect x="50" y="407" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="416.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="417">role_id</text>
+</g>
+
+<g>
+<rect class="card" x="40" y="444" width="180" height="80" rx="8"/>
+<path d="M40,452 Q40,444 48,444 H212 Q220,444 220,452 V470 H40 Z" fill="#EEEDFE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="52" y="461" fill="#26215C">sys_role</text>
+<rect x="50" y="475" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="60" y="484.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="78" y="485">id</text>
+<rect x="50" y="491" width="20" height="13" rx="3" fill="#F1EFE8" stroke="#888780" stroke-width="0.6"/>
+<text x="60" y="500.5" font-size="8" fill="#444441" text-anchor="middle">UK</text>
+<text class="attr" x="78" y="501">code</text>
+<text class="attr" x="78" y="517">name</text>
+</g>
+
+<g>
+<rect class="card" x="40" y="544" width="200" height="64" rx="8"/>
+<path d="M40,552 Q40,544 48,544 H232 Q240,544 240,552 V570 H40 Z" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="52" y="561" fill="#444441">sys_role_permission</text>
+<rect x="50" y="575" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="584.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="585">role_id</text>
+<rect x="50" y="591" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="600.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="601">permission_id</text>
+</g>
+
+<g>
+<rect class="card" x="40" y="628" width="210" height="112" rx="8"/>
+<path d="M40,636 Q40,628 48,628 H242 Q250,628 250,636 V654 H40 Z" fill="#EEEDFE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="52" y="645" fill="#26215C">sys_permission</text>
+<rect x="50" y="659" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="60" y="668.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="78" y="669">id</text>
+<rect x="50" y="675" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="60" y="684.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="78" y="685">parent_id</text>
+<text class="attr" x="78" y="701">code</text>
+<text class="attr" x="78" y="717">type</text>
+<text class="attr" x="78" y="733">path</text>
+</g>
+
+<!-- ============ 工单域 ============ -->
+<rect x="300" y="64" width="876" height="700" rx="12" fill="#E6F1FB" opacity="0.30"/>
+<text class="hdr-t" x="314" y="82" font-size="11" fill="#185FA5">工单域</text>
+
+<g transform="translate(0,-176)">
+<rect class="card" x="320" y="280" width="340" height="240" rx="8"/>
+<path d="M320,288 Q320,280 328,280 H652 Q660,280 660,288 V306 H320 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="332" y="297" fill="#042C53">repair_order　（工单 · 核心）</text>
+<rect x="330" y="311" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="340" y="320.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="358" y="321">id</text>
+<rect x="330" y="327" width="20" height="13" rx="3" fill="#F1EFE8" stroke="#888780" stroke-width="0.6"/>
+<text x="340" y="336.5" font-size="8" fill="#444441" text-anchor="middle">UK</text>
+<text class="attr" x="358" y="337">order_no</text>
+<rect x="330" y="343" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="352.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="353">reporter_id　→ sys_user</text>
+<rect x="330" y="359" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="368.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="369">assignee_id　→ sys_user</text>
+<rect x="330" y="375" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="384.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="385">category_id　→ repair_category</text>
+<rect x="330" y="391" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="400.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="401">facility_id　→ facility（可空）</text>
+<rect x="330" y="407" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="416.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="417">location_id　→ location</text>
+<text class="attr" x="358" y="433">building_id　（冗余，区域统计）</text>
+<rect x="330" y="439" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="448.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="449">dept_id　→ sys_dept</text>
+<text class="attr" x="358" y="465">status / urgency / priority</text>
+<rect x="330" y="471" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="480.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="481">parent_order_id　（自关联，返修/质保）</text>
+<text class="attr" x="358" y="497">confirm_deadline / finished_at</text>
+<text class="attr" x="358" y="513">version / deleted</text>
+</g>
+
+<g>
+<rect class="card" x="60" y="860" width="230" height="96" rx="8"/>
+<path d="M60,868 Q60,860 68,860 H282 Q290,860 290,868 V886 H60 Z" fill="#E1F5EE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="72" y="877" fill="#04342C">repair_category</text>
+<rect x="70" y="891" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="80" y="900.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="98" y="901">id</text>
+<text class="attr" x="98" y="917">name</text>
+<rect x="70" y="923" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="80" y="932.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="98" y="933">dept_id</text>
+<text class="attr" x="98" y="949">status / sort</text>
+</g>
+
+<g>
+<rect class="card" x="710" y="80" width="210" height="112" rx="8"/>
+<path d="M710,88 Q710,80 718,80 H912 Q920,80 920,88 V106 H710 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="722" y="97" fill="#042C53">repair_order_log</text>
+<rect x="720" y="111" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="730" y="120.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="748" y="121">id</text>
+<rect x="720" y="127" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="136.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="137">order_id</text>
+<text class="attr" x="748" y="153">from_status / to_status</text>
+<text class="attr" x="748" y="169">action</text>
+<rect x="720" y="175" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="184.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="185">operator_id</text>
+</g>
+
+<g>
+<rect class="card" x="710" y="222" width="210" height="96" rx="8"/>
+<path d="M710,230 Q710,222 718,222 H912 Q920,222 920,230 V248 H710 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="722" y="239" fill="#042C53">repair_order_image</text>
+<rect x="720" y="253" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="730" y="262.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="748" y="263">id</text>
+<rect x="720" y="269" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="278.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="279">order_id</text>
+<text class="attr" x="748" y="295">stage（REPORT/BEFORE/AFTER）</text>
+<text class="attr" x="748" y="311">object_key</text>
+</g>
+
+<g>
+<rect class="card" x="710" y="348" width="210" height="128" rx="8"/>
+<path d="M710,356 Q710,348 718,348 H912 Q920,348 920,356 V374 H710 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="722" y="365" fill="#042C53">repair_schedule</text>
+<rect x="720" y="379" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="730" y="388.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="748" y="389">id</text>
+<rect x="720" y="395" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="404.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="405">order_id</text>
+<rect x="720" y="411" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="420.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="421">repairer_id</text>
+<text class="attr" x="748" y="437">plan_date</text>
+<text class="attr" x="748" y="453">slot_start / slot_end</text>
+<text class="attr" x="748" y="469">status</text>
+</g>
+
+<g>
+<rect class="card" x="710" y="506" width="210" height="96" rx="8"/>
+<path d="M710,514 Q710,506 718,506 H912 Q920,506 920,514 V532 H710 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="722" y="523" fill="#042C53">chat_message</text>
+<rect x="720" y="537" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="730" y="546.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="748" y="547">id</text>
+<rect x="720" y="553" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="562.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="563">order_id</text>
+<rect x="720" y="569" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="578.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="579">sender_id / receiver_id</text>
+<text class="attr" x="748" y="595">read_flag</text>
+</g>
+
+<g>
+<rect class="card" x="710" y="632" width="210" height="112" rx="8"/>
+<path d="M710,640 Q710,632 718,632 H912 Q920,632 920,640 V658 H710 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="722" y="649" fill="#042C53">notification</text>
+<rect x="720" y="663" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="730" y="672.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="748" y="673">id</text>
+<rect x="720" y="679" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="688.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="689">receiver_id　→ sys_user</text>
+<text class="attr" x="748" y="705">type</text>
+<rect x="720" y="711" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="730" y="720.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="748" y="721">biz_id　→ repair_order</text>
+<text class="attr" x="748" y="737">read_flag</text>
+</g>
+
+<g>
+<rect class="card" x="950" y="80" width="210" height="128" rx="8"/>
+<path d="M950,88 Q950,80 958,80 H1152 Q1160,80 1160,88 V106 H950 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="962" y="97" fill="#042C53">repair_record</text>
+<rect x="960" y="111" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="970" y="120.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="988" y="121">id</text>
+<rect x="960" y="127" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="136.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="137">order_id（UK，一对一）</text>
+<rect x="960" y="143" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="152.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="153">repairer_id</text>
+<text class="attr" x="988" y="169">arrive_at / start_at / end_at</text>
+<text class="attr" x="988" y="185">content / material</text>
+<text class="attr" x="988" y="201">result</text>
+</g>
+
+<g>
+<rect class="card" x="950" y="238" width="210" height="128" rx="8"/>
+<path d="M950,246 Q950,238 958,238 H1152 Q1160,238 1160,246 V264 H950 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="962" y="255" fill="#042C53">evaluation</text>
+<rect x="960" y="269" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="970" y="278.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="988" y="279">id</text>
+<rect x="960" y="285" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="294.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="295">order_id（UK，一对一）</text>
+<rect x="960" y="301" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="310.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="311">student_id</text>
+<rect x="960" y="317" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="326.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="327">repairer_id</text>
+<text class="attr" x="988" y="343">speed / attitude / effect</text>
+<text class="attr" x="988" y="359">total_score</text>
+</g>
+
+<g>
+<rect class="card" x="950" y="386" width="210" height="128" rx="8"/>
+<path d="M950,394 Q950,386 958,386 H1152 Q1160,386 1160,394 V412 H950 Z" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="962" y="403" fill="#042C53">complaint</text>
+<rect x="960" y="417" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="970" y="426.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="988" y="427">id</text>
+<rect x="960" y="433" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="442.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="443">order_id</text>
+<rect x="960" y="449" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="458.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="459">student_id</text>
+<rect x="960" y="465" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="474.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="475">repairer_id</text>
+<text class="attr" x="988" y="491">type / status</text>
+<rect x="960" y="497" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="970" y="506.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="988" y="507">handler_id</text>
+</g>
+
+<!-- ============ 资产域 ============ -->
+<rect x="48" y="832" width="1272" height="164" rx="12" fill="#E1F5EE" opacity="0.28"/>
+<text class="hdr-t" x="60" y="826" font-size="11" fill="#0F6E56">资产与位置域</text>
+
+<g>
+<rect class="card" x="320" y="860" width="230" height="112" rx="8"/>
+<path d="M320,868 Q320,860 328,860 H542 Q550,860 550,868 V886 H320 Z" fill="#E1F5EE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="332" y="877" fill="#04342C">location　（位置树）</text>
+<rect x="330" y="891" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="340" y="900.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="358" y="901">id</text>
+<rect x="330" y="907" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="340" y="916.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="358" y="917">parent_id（自关联 1:N）</text>
+<text class="attr" x="358" y="933">level / type</text>
+<text class="attr" x="358" y="949">name</text>
+<rect x="330" y="955" width="20" height="13" rx="3" fill="#F1EFE8" stroke="#888780" stroke-width="0.6"/>
+<text x="340" y="964.5" font-size="8" fill="#444441" text-anchor="middle">UK</text>
+<text class="attr" x="358" y="965">code</text>
+</g>
+
+<g>
+<rect class="card" x="580" y="860" width="230" height="112" rx="8"/>
+<path d="M580,868 Q580,860 588,860 H802 Q810,860 810,868 V886 H580 Z" fill="#E1F5EE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="592" y="877" fill="#04342C">facility</text>
+<rect x="590" y="891" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="600" y="900.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="618" y="901">id</text>
+<rect x="590" y="907" width="20" height="13" rx="3" fill="#F1EFE8" stroke="#888780" stroke-width="0.6"/>
+<text x="600" y="916.5" font-size="8" fill="#444441" text-anchor="middle">UK</text>
+<text class="attr" x="618" y="917">facility_no</text>
+<rect x="590" y="923" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="600" y="932.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="618" y="933">type_id</text>
+<rect x="590" y="939" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="600" y="948.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="618" y="949">location_id</text>
+<text class="attr" x="618" y="965">status</text>
+</g>
+
+<g>
+<rect class="card" x="840" y="860" width="200" height="80" rx="8"/>
+<path d="M840,868 Q840,860 848,860 H1032 Q1040,860 1040,868 V886 H840 Z" fill="#E1F5EE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="852" y="877" fill="#04342C">facility_type</text>
+<rect x="850" y="891" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="860" y="900.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="878" y="901">id</text>
+<text class="attr" x="878" y="917">name</text>
+<text class="attr" x="878" y="933">code</text>
+</g>
+
+<g>
+<rect class="card" x="1070" y="860" width="240" height="112" rx="8"/>
+<path d="M1070,868 Q1070,860 1078,860 H1302 Q1310,860 1310,868 V886 H1070 Z" fill="#E1F5EE" stroke="#B4B2A9" stroke-width="0.8"/>
+<text class="ent" x="1082" y="877" fill="#04342C">fault_alert　（高频故障预警）</text>
+<rect x="1080" y="891" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="1090" y="900.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="attr" x="1108" y="901">id</text>
+<rect x="1080" y="907" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="1090" y="916.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="1108" y="917">building_id　→ location</text>
+<rect x="1080" y="923" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="1090" y="932.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="attr" x="1108" y="933">category_id　→ repair_category</text>
+<text class="attr" x="1108" y="949">order_count</text>
+<text class="attr" x="1108" y="965">window / status</text>
+</g>
+
+<!-- ============ 关系连线 ============ -->
+<g>
+<!-- 平台域链 -->
+<path class="rel" d="M140,176 L140,196" marker-end="url(#arw)"/>
+<text class="card1" x="146" y="184">1</text><text class="card1" x="146" y="194">N</text>
+
+<path class="rel" d="M140,340 L140,360" marker-end="url(#arw)"/>
+<text class="card1" x="146" y="348">1</text><text class="card1" x="146" y="358">N</text>
+
+<path class="rel" d="M140,424 L140,444" marker-end="url(#arw)"/>
+<text class="card1" x="146" y="432">N</text><text class="card1" x="146" y="442">1</text>
+
+<path class="rel" d="M140,524 L140,544" marker-end="url(#arw)"/>
+<text class="card1" x="146" y="532">1</text><text class="card1" x="146" y="542">N</text>
+
+<path class="rel" d="M140,608 L140,628" marker-end="url(#arw)"/>
+<text class="card1" x="146" y="616">N</text><text class="card1" x="146" y="626">1</text>
+
+<!-- 部门 -> 工单 -->
+<path class="rel" d="M240,120 H300 V200 H320" marker-end="url(#arw)"/>
+<text class="card1" x="244" y="115">1</text><text class="card1" x="306" y="196">N</text>
+
+<!-- 用户 -> 工单（报修人/维修人） -->
+<path class="rel" d="M270,250 H320" marker-end="url(#arw)"/>
+<text class="card1" x="277" y="245">1</text><text class="card1" x="308" y="245">N</text>
+
+<!-- 工单 -> 分类 -->
+<path class="rel" d="M360,344 V560 H290 V810 H175 V860" marker-end="url(#arw)"/>
+<text class="card1" x="366" y="356">N</text><text class="card1" x="181" y="855">1</text>
+
+<!-- 工单 -> 位置 -->
+<path class="rel" d="M435,344 V860" marker-end="url(#arw)"/>
+<text class="card1" x="441" y="356">N</text><text class="card1" x="441" y="855">1</text>
+
+<!-- 工单 -> 设施 -->
+<path class="rel" d="M520,344 V600 H695 V860" marker-end="url(#arw)"/>
+<text class="card1" x="526" y="356">N</text><text class="card1" x="701" y="855">1</text>
+
+<!-- 工单自关联 -->
+<path class="rel" d="M595,344 C595,376 640,376 640,344" marker-end="url(#arw)"/>
+<text class="card1" x="596" y="396">1:N 返修/质保</text>
+
+<!-- 工单 -> 子表：主干 1 -->
+<path class="rel-bus" d="M660,200 H680 V135"/>
+<path class="rel-bus" d="M680,200 V690"/>
+<path class="rel" d="M680,135 H710" marker-end="url(#arw)"/>
+<path class="rel" d="M680,270 H710" marker-end="url(#arw)"/>
+<path class="rel" d="M680,410 H710" marker-end="url(#arw)"/>
+<path class="rel" d="M680,555 H710" marker-end="url(#arw)"/>
+<path class="rel" d="M680,690 H710" marker-end="url(#arw)"/>
+<text class="card1" x="664" y="194">1</text>
+<text class="card1" x="698" y="131">N</text>
+<text class="card1" x="698" y="266">N</text>
+<text class="card1" x="698" y="406">N</text>
+<text class="card1" x="698" y="551">N</text>
+<text class="card1" x="698" y="686">N</text>
+
+<!-- 工单 -> 子表：主干 2 -->
+<path class="rel-bus" d="M680,205 H935 V145"/>
+<path class="rel-bus" d="M935,205 V440"/>
+<path class="rel" d="M935,145 H950" marker-end="url(#arw)"/>
+<path class="rel" d="M935,295 H950" marker-end="url(#arw)"/>
+<path class="rel" d="M935,440 H950" marker-end="url(#arw)"/>
+<text class="card1" x="938" y="141">1</text>
+<text class="card1" x="938" y="291">1</text>
+<text class="card1" x="938" y="436">N</text>
+
+<!-- 位置树自关联 -->
+<path class="rel" d="M320,880 C300,880 300,940 320,940" marker-end="url(#arw)"/>
+
+<!-- 类型 -> 设施 / 位置 -> 设施 -->
+<path class="rel" d="M840,905 H810" marker-end="url(#arw)"/>
+<text class="card1" x="832" y="900">1</text><text class="card1" x="814" y="900">N</text>
+<path class="rel" d="M550,905 H580" marker-end="url(#arw)"/>
+<text class="card1" x="553" y="900">1</text><text class="card1" x="572" y="900">N</text>
+
+<!-- 预警 -> 位置 / 预警 -> 分类 -->
+<path class="rel" d="M1200,972 V1006 H435 V972" marker-end="url(#arw)"/>
+<text class="card1" x="1206" y="1000">N</text><text class="card1" x="441" y="1000">1</text>
+<path class="rel" d="M1150,972 V1026 H175 V956" marker-end="url(#arw)"/>
+<text class="card1" x="1156" y="1020">N</text><text class="card1" x="181" y="1020">1</text>
+
+<!-- 分类 -> 部门 -->
+<path class="rel" d="M60,908 H22 V128 H40" marker-end="url(#arw)"/>
+<text class="card1" x="50" y="902" text-anchor="end">N</text><text class="card1" x="44" y="123">1</text>
+</g>
+
+<!-- ============ 图例 ============ -->
+<g>
+<rect x="1180" y="80" width="300" height="248" rx="10" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="0.8"/>
+<text x="1196" y="102" font-size="11.5" font-weight="500" fill="#2C2C2A">图例</text>
+
+<rect x="1196" y="114" width="20" height="13" rx="3" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.6"/>
+<text x="1206" y="123.5" font-size="8" fill="#534AB7" text-anchor="middle">PK</text>
+<text class="note" x="1224" y="123.5">主键 Primary Key</text>
+
+<rect x="1196" y="136" width="20" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.6"/>
+<text x="1206" y="145.5" font-size="8" fill="#185FA5" text-anchor="middle">FK</text>
+<text class="note" x="1224" y="145.5">外键 Foreign Key</text>
+
+<rect x="1196" y="158" width="20" height="13" rx="3" fill="#F1EFE8" stroke="#888780" stroke-width="0.6"/>
+<text x="1206" y="167.5" font-size="8" fill="#444441" text-anchor="middle">UK</text>
+<text class="note" x="1224" y="167.5">唯一索引 Unique Key</text>
+
+<path class="rel" d="M1196,192 H1232" marker-end="url(#arw)"/>
+<text class="note" x="1240" y="195">1 : N　一对多</text>
+
+<path class="rel" d="M1196,214 H1232" marker-end="url(#arw)"/>
+<text class="note" x="1240" y="217">1 : 1　一对一（UK 约束）</text>
+
+<rect x="1196" y="230" width="66" height="20" rx="4" fill="#F1EFE8" stroke="#888780" stroke-width="0.8"/>
+<text class="note" x="1272" y="244">M : N 经关联表拆解</text>
+
+<rect x="1196" y="264" width="12" height="12" rx="3" fill="#EEEDFE" stroke="#B4B2A9" stroke-width="0.6"/>
+<text class="note" x="1214" y="273.5">平台域</text>
+<rect x="1266" y="264" width="12" height="12" rx="3" fill="#E6F1FB" stroke="#B4B2A9" stroke-width="0.6"/>
+<text class="note" x="1284" y="273.5">工单域</text>
+<rect x="1336" y="264" width="12" height="12" rx="3" fill="#E1F5EE" stroke="#B4B2A9" stroke-width="0.6"/>
+<text class="note" x="1354" y="273.5">资产域</text>
+
+<text class="note" x="1196" y="300">卡片标题为表名，卡内为该表关键字段；</text>
+<text class="note" x="1196" y="316">灰色卡片为多对多关联表。</text>
+</g>
+
+<!-- ============ 标注说明 ============ -->
+<g>
+<rect x="1180" y="352" width="300" height="252" rx="10" fill="#FFFFFF" stroke="#B4B2A9" stroke-width="0.8"/>
+<text x="1196" y="374" font-size="11.5" font-weight="500" fill="#2C2C2A">标注说明</text>
+<text class="note" x="1196" y="396">1. repair_order 是全库中心表，9 张业务表</text>
+<text class="note" x="1196" y="411">　 通过 order_id 直接或间接关联。</text>
+<text class="note" x="1196" y="431">2. 灰色关联表 sys_user_role / sys_role_</text>
+<text class="note" x="1196" y="446">　 permission 拆解两个 M:N 关系。</text>
+<text class="note" x="1196" y="466">3. repair_order.parent_order_id 自关联，</text>
+<text class="note" x="1196" y="481">　 表示返修单与质保返修单。</text>
+<text class="note" x="1196" y="501">4. building_id 为冗余列，服务区域统计</text>
+<text class="note" x="1196" y="516">　 与高频故障预警，不参与外键连线。</text>
+<text class="note" x="1196" y="536">5. notification 同时通过 receiver_id 指向</text>
+<text class="note" x="1196" y="551">　 sys_user，图中仅绘制 biz_id 一侧。</text>
+<text class="note" x="1196" y="571">6. 未绘制的弱关联表见文档 §6.3 表清单。</text>
+</g>
+
+</svg>
