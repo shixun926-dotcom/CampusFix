@@ -195,7 +195,6 @@ CampusFix/
 ├── CampusFix.md                 原始需求
 ├── CampusFix-项目注意文档.md     设计基线（冲突以此为准）
 ├── CampusFix-系统设计说明书.md   系统设计（架构/接口/表结构）
-├── CampusFix-前后端分离改造说明.md 前后端职责、接口契约、部署与迁移
 └── PROGRESS.md                  本文件
 ```
 
@@ -303,8 +302,6 @@ Vite 已配置 `/api` 代理到 8080，前端不需要单独配后端地址。
 | 同源部署 | `VITE_API_BASE_URL=/api/v1`、资源地址留空 | 默认即可 |
 | 分域部署 | `VITE_API_BASE_URL=https://api.x.com/api/v1`、`VITE_ASSET_BASE_URL=https://api.x.com` | `CORS_ALLOWED_ORIGINS=https://www.x.com`、`STORAGE_PUBLIC_BASE_URL=https://api.x.com` |
 | 容器编排 | `docker compose -f deploy/docker-compose.yml up -d --build` | 由编排注入 |
-
-完整说明见 **`CampusFix-前后端分离改造说明.md`**。
 
 ## 六、测试账号
 
@@ -657,7 +654,6 @@ UI 基于**自建设计系统**（`frontend/src/styles/theme.css`，最初移植
 | `CampusFix.md` | 原始需求 |
 | `CampusFix-项目注意文档.md` | 设计基线：24 条决策、状态机、信誉值、统计口径 |
 | `CampusFix-系统设计说明书.md` | 架构、模块、接口、25 张表 DDL、部署、非功能、风险 |
-| `CampusFix-前后端分离改造说明.md` | 前后端职责边界、接口契约、跨域与资源地址、三种部署形态、迁移变更与回滚 |
 | `assets/er-diagram.svg` | 数据库 ER 图（矢量） |
 
 ## 十、与文档的偏差记录

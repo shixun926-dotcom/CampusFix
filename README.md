@@ -212,7 +212,6 @@ CampusFix/
 | [`PROGRESS.md`](./PROGRESS.md) | 开发进度看板（随代码同步更新） |
 | [`CampusFix-项目注意文档.md`](./CampusFix-项目注意文档.md) | 设计基线：24 条业务决策、状态机、信誉值、统计口径（冲突时以此为准） |
 | [`CampusFix-系统设计说明书.md`](./CampusFix-系统设计说明书.md) | 系统设计：架构、模块、接口契约、25 张表 DDL、部署方案 |
-| [`CampusFix-前后端分离改造说明.md`](./CampusFix-前后端分离改造说明.md) | 前后端职责边界、跨域与资源地址、三种部署形态 |
 | [`assets/er-diagram.svg`](./assets/er-diagram.svg) | 数据库 ER 图 |
 
 ## 路线图
