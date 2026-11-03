@@ -78,7 +78,10 @@ campusfix:
   cache:
     type: ${CACHE_TYPE:auto}
   jwt:
-    secret: ${JWT_SECRET:CampusFix@2026#SecretKeyForJwtHS256MustBeLongEnough32Bytes}
+    # 密钥必须由环境变量 JWT_SECRET 注入，不做默认值，避免硬编码泄露。
+    # 生成：openssl rand -base64 48（或任意长度 ≥ 32 字节的随机串）。
+    # 未配置或长度不足 32 字节时，应用将拒绝启动（见 JwtProperties 校验）。
+    secret: ${JWT_SECRET:}
     access-ttl-seconds: 7200
     refresh-ttl-seconds: 604800
   # 跨域白名单：前后端分域部署时用 CORS_ALLOWED_ORIGINS 放行前端域名（逗号分隔）

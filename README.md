@@ -113,6 +113,10 @@ mysql -uroot -p < db/schema.sql    # 建库建表（25 张）
 mysql -uroot -p < db/data.sql      # 测试数据（角色账号、覆盖全部状态的工单）
 ```
 
+> 密码需在 `application-dev.yml`（不入库）或环境变量 `DB_PASSWORD` 中配置，否则后端仍用占位符 `change-me` 连不上库。
+> **JWT 密钥同样必填**：项目不再提供默认密钥，需在 `application-dev.yml` 的 `campusfix.jwt.secret` 或环境变量 `JWT_SECRET` 中配置（≥32 字节，`openssl rand -base64 48` 生成），否则启动会失败。
+> 完整步骤（校验 SQL、Windows 重定向写法、JWT 密钥配置、Docker 首次初始化机制、常见报错）见 **[`backend/db/README.md`](./backend/db/README.md)**。
+
 ### 2. 启动后端（:8080，一键启动）
 
 ```bash

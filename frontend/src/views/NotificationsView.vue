@@ -88,6 +88,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Icon from '../ui/Icon.vue'
 import { toastOk } from '../ui/toast'
+import { useNotificationStore } from '../stores/notification'
 import {
   pageNotifications,
   markAllNotificationsRead,
@@ -96,10 +97,12 @@ import {
 } from '../api/message'
 
 const router = useRouter()
+const notiStore = useNotificationStore()
 const rows = ref<NotificationVO[]>([])
 const total = ref(0)
-const unread = ref(0)
 const loading = ref(true)
+
+const unread = computed(() => notiStore.unreadCount)
 
 const query = ref({ page: 1, size: 15, type: '', unread: '' as string | boolean })
 
@@ -132,7 +135,7 @@ async function load() {
     })
     rows.value = page?.list || []
     total.value = Number(page?.total) || 0
-    unread.value = Number(page?.unreadCount) || 0
+    notiStore.setUnread(Number(page?.unreadCount) || 0)
   } catch {
     rows.value = []
     total.value = 0
@@ -164,7 +167,7 @@ async function onItemClick(n: NotificationVO) {
       /* 忽略 */
     }
     n.readFlag = 1
-    unread.value = Math.max(0, unread.value - 1)
+    notiStore.decrement()
   }
   if (n.bizId) {
     router.push({ path: '/orders', query: { id: String(n.bizId) } })
@@ -256,5 +259,12 @@ onMounted(load)
   background: var(--brand-l);
   border-radius: 6px;
   padding: 2px 7px;
+  /* 关键：未读徽标是纯文字，必须禁止换行并阻止被窄容器压缩，
+     否则「未读」二字会竖向堆叠（未在上、读在下） */
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 </style>

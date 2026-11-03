@@ -618,3 +618,44 @@ Nginx (:443)
 | 2026-10-30 | v1.0 | 建立基线，录入 24 条决策，新增状态机 10 状态、信誉值体系、站内聊天、位置树、存储抽象、统计口径 | 用户答复 A1–A24 |
 | 2026-10-30 | v1.1 | 裁决返修状态为方案 B（回「待处理」），§5.4 与 §15 同步更新 | 用户确认 |
 | 2026-10-30 | v1.2 | 前端界面改版：自建设计系统重构与全页面视觉升级，工作台增加数据可视化；工单管理改为「故障分类优先」导航。§13.1 所列 Element Plus / ECharts 未采用，UI 与图表均为自建 | 用户需求：前端美化、工单按分类展示 |
+| 2026-11-03 | v1.3 | 安全加固：JWT 签名密钥移除硬编码默认值，改为 `JWT_SECRET` 环境变量强制注入 + `JwtProperties` 启动校验（未配置或 <32 字节拒绝启动）；docker-compose 的 `MYSQL_ROOT_PASSWORD`/`JWT_SECRET`/`DB_PASSWORD` 改用 `${VAR:?}` 必填约束。见 §17「密钥管理规范」 | 安全审查（P0 整改） |
+
+---
+
+## 17. 密钥管理规范（2026-11-03 新增）
+
+> 定位：JWT 签名密钥曾以硬编码默认值提交进仓库，构成高危泄露。本节固化整改后的密钥生命周期规范，作为后续开发的约束。
+
+### 17.1 原则
+
+1. **密钥不落库、不硬编码、不提供默认值**。签名密钥只能经环境变量 `JWT_SECRET` 注入，任何提交到仓库的文件中不得出现真实密钥或可用于伪造签名的默认密钥。
+2. **启动强校验**：`JwtProperties` 在 `@PostConstruct` 阶段校验密钥非空且长度 ≥ 32 字节（HS256 要求），不满足则拒绝启动，把「弱密钥上线」拦截在启动期。
+3. **环境隔离**：本地开发用 `application-dev.yml`（已 gitignore）里的 `campusfix.jwt.secret`；生产用 `JWT_SECRET` 环境变量。二者密钥不得复用。
+
+### 17.2 生成与注入
+
+```bash
+# 生成（≥32 字节）
+openssl rand -base64 48    # 推荐
+openssl rand -hex 32
+```
+
+- Docker Compose：`cp .env.example .env` 后填写 `JWT_SECRET`；compose 内用 `${JWT_SECRET:?提示}` 强制非空。
+- 本机开发：`application-dev.yml` 的 `campusfix.jwt.secret` 或 `export JWT_SECRET=...`。
+
+### 17.3 轮换与失效策略
+
+1. **轮换触发**：密钥疑似泄露、仓库曾推送公开平台、定期（建议 ≤ 12 个月）。
+2. **失效动作**：切换新密钥后，旧 token 因验签失败自动失效；同时清空令牌白名单强制全员重新登录：
+
+   ```bash
+   redis-cli --scan --pattern 'campusfix:auth:*' | xargs redis-cli del
+   # 内存模式（CACHE_TYPE=memory）：直接重启后端即可清空
+   ```
+
+3. **历史清理**：若旧密钥曾进入 git 历史，需用 `git filter-repo` / `bfg` 重写历史，或删库重建；否则旧提交仍可被检索到，仅改配置文件不足以止损。
+
+### 17.4 其他敏感项
+
+- `MYSQL_ROOT_PASSWORD` 同样无默认值（compose `${VAR:?}` 必填）。
+- `application-dev.yml` 中的真实 MySQL 密码仅限本机、已被 gitignore，禁止将其提交或复用到其他环境。

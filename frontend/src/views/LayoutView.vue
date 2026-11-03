@@ -189,8 +189,8 @@ import { confirmDialog } from '../ui/dialog'
 import { toast, toastOk } from '../ui/toast'
 import { swaggerUrl } from '../config/env'
 import { useAuthStore } from '../stores/auth'
+import { useNotificationStore } from '../stores/notification'
 import {
-  getUnreadCount,
   markAllNotificationsRead,
   markNotificationRead,
   onPush,
@@ -198,6 +198,7 @@ import {
   type NotificationVO
 } from '../api/message'
 const auth = useAuthStore()
+const notiStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -262,22 +263,14 @@ function onSearch() {
 
 const notiOpen = ref(false)
 const notiWrap = ref<HTMLElement | null>(null)
-const unread = ref(0)
+const unread = computed(() => notiStore.unreadCount)
 const items = ref<NotificationVO[]>([])
-
-async function loadUnread() {
-  try {
-    unread.value = (await getUnreadCount()) || 0
-  } catch {
-    /* 静默 */
-  }
-}
 
 async function loadList() {
   try {
     const page = await pageNotifications({ page: 1, size: 20 })
     items.value = page?.list || []
-    unread.value = page?.unreadCount ?? unread.value
+    notiStore.setUnread(page?.unreadCount ?? notiStore.unreadCount)
   } catch {
     /* 静默 */
   }
@@ -298,7 +291,7 @@ async function onNotiClick(n: NotificationVO) {
       /* 已读失败不阻断跳转 */
     }
     n.readFlag = 1
-    unread.value = Math.max(0, unread.value - 1)
+    notiStore.decrement()
   }
   notiOpen.value = false
   if (n.bizId) {
@@ -330,7 +323,7 @@ const shortTime = (t?: string) => (t ? t.slice(5, 16) : '')
 let unsubscribePush: (() => void) | null = null
 unsubscribePush = onPush((frame) => {
   if (frame.type === 'NOTIFY') {
-    unread.value += 1
+    notiStore.increment()
     const p = frame.payload
     if (p?.id) {
       items.value = [{ ...(p as NotificationVO) }, ...items.value].slice(0, 20)
@@ -359,6 +352,7 @@ async function onLogout() {
   })
   if (!ok) return
   await auth.logout()
+  notiStore.reset()
   toastOk('已退出登录')
   router.push('/login')
 }
@@ -369,7 +363,8 @@ function onDocClick(e: MouseEvent) {
 }
 
 onMounted(() => {
-  loadUnread()
+  // 首次进入拉取一次未读；之后依赖 store + 推送实时维护
+  if (!notiStore.initialized) notiStore.fetchUnread()
   document.addEventListener('mousedown', onDocClick)
 })
 onBeforeUnmount(() => {

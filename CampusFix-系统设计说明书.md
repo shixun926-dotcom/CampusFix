@@ -1262,8 +1262,15 @@ campusfix:
 启动顺序：
 
 ```bash
-docker compose up -d          # MySQL 8 + Redis 7
-mvn flyway:migrate            # 或手工执行 db/schema.sql + db/data.sql
+# 1) 手工建库（项目未接入 Flyway，pom 中无该插件，mvn flyway:migrate 不可用）
+cd backend
+mysql -uroot -p < db/schema.sql
+mysql -uroot -p < db/data.sql
+
+# 2) 或改用容器（首次启动自动执行 01-schema / 02-data；编排仅含 mysql/backend/frontend，不含 Redis）
+docker compose -f deploy/docker-compose.yml up -d --build
+
+# 3) 启动后端与前端
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 cd frontend && pnpm install && pnpm dev
 ```
@@ -1355,7 +1362,7 @@ WantedBy=multi-user.target
 | `campusfix.storage.local-path` | `/data/campusfix/upload` | 本地存储根目录 |
 | `campusfix.oss.endpoint` | — | OSS 地域节点 |
 | `campusfix.oss.bucket` | — | 桶名（公共读） |
-| `campusfix.jwt.secret` | — | HS256 密钥，≥32 字节 |
+| `campusfix.jwt.secret` | 无（必填，启动强校验） | HS256 密钥，≥32 字节；由 `JWT_SECRET` 环境变量注入，**不提供默认值** |
 | `campusfix.jwt.access-ttl` | `7200` | 秒 |
 | `campusfix.jwt.refresh-ttl` | `604800` | 秒 |
 | `campusfix.order.auto-assign-hours` | `24` | 自动派单阈值 |
@@ -1406,6 +1413,7 @@ WantedBy=multi-user.target
 | 维度 | 措施 |
 |---|---|
 | 认证 | JWT HS256，access 2h / refresh 7d；refresh 存 Redis 白名单，注销即失效 |
+| 密钥管理 | 签名密钥经 `JWT_SECRET` 环境变量注入，无硬编码默认值；`JwtProperties` 启动校验（未配置或 <32 字节拒绝启动）；密钥轮换时清空 `campusfix:auth:*` 白名单强制全员重新登录 |
 | 密码 | BCrypt（cost 10）；首次登录强制修改；连续失败 5 次锁定 15 分钟 |
 | 传输 | 强制 HTTPS；HSTS |
 | 接口鉴权 | `@PreAuthorize("hasAuthority('order:assign')")`，权限码与角色解耦 |

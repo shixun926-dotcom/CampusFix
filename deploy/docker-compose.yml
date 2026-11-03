@@ -19,7 +19,8 @@ services:
     restart: unless-stopped
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-campusfix2026}
+      # 密码由 .env 提供（复制 .env.example 后修改），不再内置默认值
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置 MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-campusfix}
       TZ: Asia/Shanghai
     volumes:
@@ -48,8 +49,8 @@ services:
     environment:
       DB_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-campusfix}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true"
       DB_USERNAME: root
-      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-campusfix2026}
-      JWT_SECRET: ${JWT_SECRET:-CampusFix@2026#SecretKeyForJwtHS256MustBeLongEnough32Bytes}
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置 MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?请在 .env 中设置 JWT_SECRET（openssl rand -base64 48 生成）}
       # 单容器部署无需 Redis 共享登录态，默认用进程内存储；要多实例再挂 Redis 并设 redis
       CACHE_TYPE: ${CACHE_TYPE:-memory}
       STORAGE_TYPE: local
