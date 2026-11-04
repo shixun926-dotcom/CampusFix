@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
@@ -34,6 +35,12 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       chunkSizeWarningLimit: 1500
+    },
+    test: {
+      environment: 'jsdom',
+      globals: true,
+      // 测试间互不干扰，且 localStorage 等需要每次重置
+      setupFiles: ['./src/test/setup.ts']
     }
   }
 })
