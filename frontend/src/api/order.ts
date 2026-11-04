@@ -21,6 +21,9 @@ export interface OrderVO {
   assigneeId?: number
   assigneeName?: string
   assigneePhone?: string
+  assigneeAvatar?: string
+  assigneeStaffNo?: string
+  assigneeDeptName?: string
   deptId?: number
   deptName?: string
   isWarranty?: number

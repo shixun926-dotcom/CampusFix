@@ -56,6 +56,9 @@ CampusFix 面向校园场景，把"发现设施问题 → 报修 → 审核 → 
 | 未读消息 UI 修复 | ✅ | ① 未读徽标「未读」由竖向堆叠改为横向（补 `white-space: nowrap` + `flex-shrink: 0`）；② 引入全局 `stores/notification.ts`（Pinia）统一未读计数，顶栏铃铛/侧栏/消息中心三处角标实时同步，点击已读即时更新（2026-11-03） |
 | 状态滞留巡检 | ✅ | 每日 09:00 扫描「`updated_at` 超 7 天仍停留非终态」的工单，推送站内信（type=SYSTEM，落库+WS）给 ADMIN + MANAGER 全员；`order_stall_alert(order_id, status)` 唯一键去重（同单同状态只推一次，状态变化后再次滞留会重推）；阈值与 cron 入 `campusfix.order.stall-alert-*` 可配（2026-11-04） |
 | 前端单元测试 | ✅ | 从零搭建 Vitest 2.1.9 + @vue/test-utils + jsdom + @pinia/testing（锁 2.x 兼容 Vite 5）；39 个用例覆盖 auth store（登录/权限/登出）、notification store（未读计数边界）、LoginView（校验/提交/跳转/异常）、NewOrderModal（逐级位置选择/六重校验链/提交）；`npm test` 全绿（2026-11-04） |
+| 维修工个人中心 | ✅ | 侧栏「个人中心」入口（仅维修工）+ `/profile` 页：① 身份与头像同卡展示（可追溯）；② 姓名/联系方式编辑（工号/所属区域只读）；③ 头像上传（JPG/PNG、200–4096px、≤2MB、魔数+尺寸三重校验、强制项未传阻止保存）；④ 学生端工单详情补全维修工头像/工号/所属区域（接单后可见手机号）；新增 `profile:view` 权限 + V4 迁移脚本（2026-11-04） |
+| 个人中心字段权限与头像规则 | ✅ | 姓名/工号/所属区域只读（仅手机号可编辑）；默认头像改「品牌色底+姓氏首字」；`avatar_deadline` 一天内强制更换（逾期红色横幅提醒）；新增「信息更改申请」流程——维修工提交 → 后勤管理员审核（通过落地/打回附原因+站内通知）→ `profile_change_request` 表 + `ProfileChangeStatus` 枚举 + `profile:change:review` 权限 + V5 迁移（2026-11-04） |
+| 头像模块展示修复 | ✅ | 修复个人中心顶部默认头像塌陷/偏位（`.default-avatar` 由 `height:100%` 改为 `position:absolute; inset:0` 绝对铺满，父容器补 `position:relative`），个人中心顶部、学生端预览、工单详情三处默认头像统一（2026-11-04） |
 
 ### 已实现的接口（可用 curl 验证）
 

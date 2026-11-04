@@ -19,12 +19,28 @@
         <span>{{ ordersNav }}</span>
       </a>
       <a
+        v-if="isRepairer"
+        :class="{ on: route.path === '/profile' }"
+        @click="go('/profile')"
+      >
+        <Icon name="user" :size="17" />
+        <span>个人中心</span>
+      </a>
+      <a
         v-if="auth.has('complaint:list')"
         :class="{ on: route.path === '/complaints' }"
         @click="go('/complaints')"
       >
         <Icon name="alert" :size="17" />
         <span>投诉管理</span>
+      </a>
+      <a
+        v-if="auth.has('profile:change:review')"
+        :class="{ on: route.path === '/profile-changes' }"
+        @click="go('/profile-changes')"
+      >
+        <Icon name="shield" :size="17" />
+        <span>信息更改审核</span>
       </a>
       <a v-if="auth.has('user:list')" :class="{ on: route.path === '/users' }" @click="go('/users')">
         <Icon name="users" :size="17" />

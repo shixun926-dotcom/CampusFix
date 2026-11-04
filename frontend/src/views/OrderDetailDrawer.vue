@@ -47,8 +47,22 @@
           <div class="k">维修人</div>
           <div class="v">
             <template v-if="order.assigneeName">
-              {{ order.assigneeName }}
-              <span v-if="order.assigneePhone" class="muted">（{{ order.assigneePhone }}）</span>
+              <div class="repairer-chip">
+                <span class="rp-avatar">
+                  <img v-if="order.assigneeAvatar" :src="asset(order.assigneeAvatar)" alt="" />
+                  <span v-else class="rp-default">{{ (order.assigneeName || '维').charAt(0) }}</span>
+                </span>
+                <span class="rp-main">
+                  <span class="rp-name">
+                    {{ order.assigneeName }}
+                    <span v-if="order.assigneeStaffNo" class="muted">工号 {{ order.assigneeStaffNo }}</span>
+                  </span>
+                  <span class="rp-sub">
+                    {{ order.assigneeDeptName || '未分组' }}
+                    <template v-if="order.assigneePhone"> · {{ order.assigneePhone }}</template>
+                  </span>
+                </span>
+              </div>
             </template>
             <span v-else class="muted">尚未指派</span>
           </div>
@@ -562,6 +576,58 @@ async function run(fn: () => Promise<any>, successMsg: string) {
 }
 .muted {
   color: var(--ink-3);
+}
+/* 维修人信息卡 */
+.repairer-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rp-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: linear-gradient(140deg, #eef1f6, #e2e6ee);
+  color: #b7bdc9;
+  flex: none;
+}
+.rp-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.rp-default {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, #f0505c, var(--brand) 55%, #c42532);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+.rp-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.rp-name {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.rp-name .muted {
+  font-weight: 400;
+  margin-left: 4px;
+}
+.rp-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 1px;
 }
 .sec {
   margin-top: 22px;

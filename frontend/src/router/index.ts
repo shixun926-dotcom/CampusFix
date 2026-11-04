@@ -53,6 +53,18 @@ const routes = [
         name: 'notifications',
         component: () => import('../views/NotificationsView.vue'),
         meta: { title: '消息中心' }
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('../views/ProfileView.vue'),
+        meta: { title: '个人中心' }
+      },
+      {
+        path: 'profile-changes',
+        name: 'profile-changes',
+        component: () => import('../views/ProfileChangeReviewView.vue'),
+        meta: { title: '信息更改审核', perm: 'profile:change:review' }
       }
     ]
   },
