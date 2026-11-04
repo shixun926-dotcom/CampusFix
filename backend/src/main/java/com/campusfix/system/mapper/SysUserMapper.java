@@ -37,4 +37,21 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
             </script>
             """)
     List<java.util.Map<String, Object>> selectRolesByUserIds(@Param("ids") List<Long> ids);
+
+    /** 查拥有指定角色（任一）且启用中的用户，用于系统级通知的接收人范围。 */
+    @Select("""
+            <script>
+            SELECT DISTINCT u.*
+            FROM sys_user u
+            JOIN sys_user_role ur ON ur.user_id = u.id
+            JOIN sys_role r ON r.id = ur.role_id
+            WHERE u.deleted = 0
+              AND u.status = 1
+              AND r.status = 1
+              AND r.code IN
+              <foreach collection="roleCodes" item="rc" open="(" separator="," close=")">#{rc}</foreach>
+            ORDER BY u.id
+            </script>
+            """)
+    List<SysUser> selectEnabledByRoles(@Param("roleCodes") List<String> roleCodes);
 }

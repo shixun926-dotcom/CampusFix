@@ -246,6 +246,21 @@ CREATE TABLE fault_alert (
   KEY idx_status (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='高频故障预警';
 
+DROP TABLE IF EXISTS order_stall_alert;
+CREATE TABLE order_stall_alert (
+  id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id       BIGINT UNSIGNED NOT NULL,
+  order_no       VARCHAR(32)     NOT NULL,
+  status         VARCHAR(30)     NOT NULL COMMENT '推送时的工单状态',
+  stall_since    DATETIME        NOT NULL COMMENT '判定滞留时的最后更新时间',
+  notified_count INT             NOT NULL DEFAULT 1 COMMENT '已推送次数',
+  last_notified_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_order_status (order_id, status),
+  KEY idx_last_notified (last_notified_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='滞留工单推送去重（同工单同状态只推一次）';
+
 -- ------------------------------------------------------------
 -- 工单域
 -- ------------------------------------------------------------

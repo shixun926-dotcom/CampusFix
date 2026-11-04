@@ -109,6 +109,9 @@ campusfix:
     auto-confirm-days: 3
     max-images: 9
     warranty-days: 3
+    # 状态滞留巡检：最后更新时间超过该天数仍未流转的非终态工单 → 推送管理员
+    stall-alert-days: 7
+    stall-alert-cron: ${STALL_ALERT_CRON:0 0 9 * * ?}
   credit:
     init-score: 100
     deduct-score: 10

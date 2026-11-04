@@ -35,4 +35,10 @@ public class OrderProperties {
 
     /** 自动验收任务的 cron，默认每天 02:00 */
     private String autoConfirmCron = "0 0 2 * * ?";
+
+    /** 状态滞留判定阈值：最后更新时间超过该天数仍未流转，视为滞留（天） */
+    private int stallAlertDays = 7;
+
+    /** 滞留巡检任务的 cron，默认每天 09:00 */
+    private String stallAlertCron = "0 0 9 * * ?";
 }

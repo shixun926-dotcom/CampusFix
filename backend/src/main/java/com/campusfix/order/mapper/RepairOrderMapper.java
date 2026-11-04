@@ -44,4 +44,25 @@ public interface RepairOrderMapper extends BaseMapper<RepairOrder> {
             LIMIT 50
             """)
     List<RepairOrder> selectAutoAssignCandidates(@Param("deadline") LocalDateTime deadline);
+
+    /**
+     * 状态滞留工单：停留超过阈值时间仍未流转的非终态工单。
+     *
+     * <p>以 {@code updated_at}（最后活动时间）为口径，凡是最后更新时间早于
+     * {@code stallBefore} 的都属于滞留。非终态集合由调用方传入（{@link com.campusfix.common.enums.OrderStatus#activeStatuses()}）。</p>
+     */
+    @Select("""
+            <script>
+            SELECT *
+            FROM repair_order
+            WHERE deleted = 0
+              AND status IN
+              <foreach collection="activeStatuses" item="s" open="(" separator="," close=")">#{s}</foreach>
+              AND updated_at &lt;= #{stallBefore}
+            ORDER BY updated_at ASC, priority DESC
+            LIMIT 200
+            </script>
+            """)
+    List<RepairOrder> selectStallCandidates(@Param("activeStatuses") List<String> activeStatuses,
+                                            @Param("stallBefore") LocalDateTime stallBefore);
 }
