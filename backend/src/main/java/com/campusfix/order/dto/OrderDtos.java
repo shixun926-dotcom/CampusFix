@@ -101,6 +101,10 @@ public final class OrderDtos {
         private Long assigneeId;
         private String assigneeName;
         private String assigneePhone;
+        /** 维修工对外信息：头像 / 工号 / 所属区域（学生端工单详情可见） */
+        private String assigneeAvatar;
+        private String assigneeStaffNo;
+        private String assigneeDeptName;
         private Long deptId;
         private String deptName;
         private Integer isWarranty;

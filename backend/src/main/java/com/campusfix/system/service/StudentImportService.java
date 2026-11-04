@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -156,6 +157,7 @@ public class StudentImportService {
         user.setCreditScore(100);
         user.setStatus(1);
         user.setPwdResetFlag(1);
+        user.setAvatarDeadline(LocalDateTime.now().plusDays(1));
         return user;
     }
 

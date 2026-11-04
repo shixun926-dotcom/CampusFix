@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
@@ -37,12 +39,17 @@ import java.util.Set;
 public class FileController {
 
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
-    private static final Set<String> ALLOWED_STAGE = Set.of("REPORT", "BEFORE", "AFTER");
+    private static final Set<String> ALLOWED_STAGE = Set.of("REPORT", "BEFORE", "AFTER", "AVATAR");
+    /** 头像专用上限（MB），比工单图片更严格 */
+    private static final int AVATAR_MAX_MB = 2;
+    /** 头像尺寸范围（px） */
+    private static final int AVATAR_MIN_PX = 200;
+    private static final int AVATAR_MAX_PX = 4096;
 
     private final FileStorageService storageService;
     private final OrderProperties orderProperties;
 
-    @Operation(summary = "上传图片（报修 / 维修前 / 维修后）")
+    @Operation(summary = "上传图片（报修 / 维修前 / 维修后 / 头像）")
     @PostMapping("/upload")
     public Result<Map<String, Object>> upload(@RequestParam("file") MultipartFile file,
                                               @RequestParam(defaultValue = "REPORT") String stage) {
@@ -51,23 +58,30 @@ public class FileController {
         }
         String stageUpper = stage.toUpperCase(Locale.ROOT);
         if (!ALLOWED_STAGE.contains(stageUpper)) {
-            throw new BizException(ResultCode.FILE_TYPE_NOT_ALLOWED, "图片阶段只能是 REPORT / BEFORE / AFTER");
+            throw new BizException(ResultCode.FILE_TYPE_NOT_ALLOWED,
+                    "图片阶段只能是 REPORT / BEFORE / AFTER / AVATAR");
         }
 
         String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
         if (ext == null || !ALLOWED_EXT.contains(ext.toLowerCase(Locale.ROOT))) {
             throw new BizException(ResultCode.FILE_TYPE_NOT_ALLOWED, "仅支持 jpg / jpeg / png / webp 格式");
         }
-        long limit = (long) orderProperties.getMaxImageMb() * 1024 * 1024;
+        boolean isAvatar = "AVATAR".equals(stageUpper);
+        long limit = (long) (isAvatar ? AVATAR_MAX_MB : orderProperties.getMaxImageMb()) * 1024 * 1024;
         if (file.getSize() > limit) {
             throw new BizException(ResultCode.IMAGE_LIMIT,
-                    "单张图片不能超过 " + orderProperties.getMaxImageMb() + "MB");
+                    "单张图片不能超过 " + (isAvatar ? AVATAR_MAX_MB : orderProperties.getMaxImageMb()) + "MB");
         }
         if (!isRealImage(file)) {
             throw new BizException(ResultCode.FILE_TYPE_NOT_ALLOWED, "文件内容不是有效图片，请重新选择");
         }
+        if (isAvatar && !isValidAvatarDimension(file)) {
+            throw new BizException(ResultCode.FILE_TYPE_NOT_ALLOWED,
+                    "头像需为 " + AVATAR_MIN_PX + "×" + AVATAR_MIN_PX + " 至 "
+                            + AVATAR_MAX_PX + "×" + AVATAR_MAX_PX + " 之间的 JPG/PNG 图片");
+        }
 
-        String objectKey = storageService.upload(file, "order/" + CurrentUserHolder.id());
+        String objectKey = storageService.upload(file, isAvatar ? "avatar" : "order/" + CurrentUserHolder.id());
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("objectKey", objectKey);
@@ -76,6 +90,23 @@ public class FileController {
         data.put("fileSize", file.getSize());
         data.put("stage", stageUpper);
         return Result.ok(data);
+    }
+
+    /** 头像尺寸解析：宽高均需落在 [200, 4096] 区间内。 */
+    private boolean isValidAvatarDimension(MultipartFile file) {
+        try (InputStream in = file.getInputStream()) {
+            BufferedImage img = ImageIO.read(in);
+            if (img == null) {
+                return false;
+            }
+            int w = img.getWidth();
+            int h = img.getHeight();
+            return w >= AVATAR_MIN_PX && h >= AVATAR_MIN_PX
+                    && w <= AVATAR_MAX_PX && h <= AVATAR_MAX_PX;
+        } catch (IOException e) {
+            log.warn("解析头像尺寸失败", e);
+            return false;
+        }
     }
 
     /** 魔数校验：JPEG(FF D8 FF) / PNG(89 50 4E 47) / WEBP(RIFF....WEBP)。 */

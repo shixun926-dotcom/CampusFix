@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,6 +110,8 @@ public class UserService {
         user.setCreditScore(100);
         user.setStatus(req.getStatus() == null ? 1 : req.getStatus());
         user.setPwdResetFlag(1);
+        // 头像强制更换：创建时约定 1 天内需更换（基线：头像默认值 + 一天内强制更换）
+        user.setAvatarDeadline(LocalDateTime.now().plusDays(1));
         userMapper.insert(user);
         assignRoles(user.getId(), req.getRoleCodes());
         return user.getId();
@@ -161,6 +164,7 @@ public class UserService {
         user.setCreditScore(100);
         user.setStatus(1);
         user.setPwdResetFlag(1);
+        user.setAvatarDeadline(LocalDateTime.now().plusDays(1));
         userMapper.insert(user);
 
         assignRoles(user.getId(), List.of(RoleCode.STUDENT));
@@ -325,6 +329,7 @@ public class UserService {
         vo.setDeptId(u.getDeptId());
         vo.setDeptName(u.getDeptId() == null ? null : deptNames.get(u.getDeptId()));
         vo.setPhone(u.getPhone());
+        vo.setAvatar(u.getAvatar());
         vo.setCreditScore(u.getCreditScore());
         vo.setStatus(u.getStatus());
         vo.setRoleCodes(codes);

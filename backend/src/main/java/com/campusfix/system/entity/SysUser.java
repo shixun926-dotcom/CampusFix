@@ -23,6 +23,8 @@ public class SysUser extends BaseEntity {
     private Long deptId;
     private String phone;
     private String avatar;
+    /** 头像强制更换截止时间：逾期未换则提示尽快更换 */
+    private java.time.LocalDateTime avatarDeadline;
     private Integer creditScore;
     /** 1 正常 0 禁用 */
     private Integer status;

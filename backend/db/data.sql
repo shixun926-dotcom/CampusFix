@@ -79,8 +79,9 @@ INSERT INTO sys_permission (id, parent_id, code, name, type, path, sort) VALUES
 (57,  0, 'dept:edit',        '部门维护',     'BUTTON', '/depts',               57),
 (58,  0, 'config:list',      '系统参数',     'API',    '/configs',             58),
 (59,  0, 'config:edit',      '修改参数',     'BUTTON', NULL,                   59),
-(60,  0, 'log:list',         '日志查看',     'API',    '/logs',                60);
-
+(60,  0, 'log:list',         '日志查看',     'API',    '/logs',                60),
+(61,  0, 'profile:view',     '个人中心',     'API',    '/profile',             61),
+(62,  0, 'profile:change:review', '信息更改审核', 'BUTTON', NULL,               62);
 -- ADMIN 全量
 INSERT INTO sys_role_permission (role_id, permission_id)
 SELECT 4, id FROM sys_permission;
@@ -88,11 +89,11 @@ SELECT 4, id FROM sys_permission;
 -- MANAGER 部门级
 INSERT INTO sys_role_permission (role_id, permission_id) VALUES
 (3, 10), (3, 11), (3, 12), (3, 15), (3, 20), (3, 21),
-(3, 30), (3, 31), (3, 40), (3, 60);
+(3, 30), (3, 31), (3, 40), (3, 60), (3, 62);
 
 -- REPAIRER
 INSERT INTO sys_role_permission (role_id, permission_id) VALUES
-(2, 10), (2, 13), (2, 14);
+(2, 10), (2, 13), (2, 14), (2, 61);
 
 -- STUDENT：仅能查看自己的工单（数据权限由拦截器控制）
 INSERT INTO sys_role_permission (role_id, permission_id) VALUES

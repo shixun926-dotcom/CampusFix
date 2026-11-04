@@ -349,8 +349,28 @@ public class OrderQueryService {
         SysUser reporter = users.get(o.getReporterId());
         vo.setReporterName(reporter == null ? null : reporter.getRealName());
         SysUser assignee = users.get(o.getAssigneeId());
-        vo.setAssigneeName(assignee == null ? null : assignee.getRealName());
-        vo.setAssigneePhone(assignee == null ? null : assignee.getPhone());
+        if (assignee != null) {
+            vo.setAssigneeName(assignee.getRealName());
+            vo.setAssigneeStaffNo(assignee.getStaffNo());
+            // 所属区域：维修工挂靠部门名（水电组/空调组/网络组）
+            vo.setAssigneeDeptName(assignee.getDeptId() == null ? null : depts.get(assignee.getDeptId()));
+            // 头像转 URL（数据库只存 objectKey）
+            vo.setAssigneeAvatar(fileStorageService.getUrl(assignee.getAvatar()));
+            // 隐私时点控制（基线 §11.2）：接单后才对外展示手机号
+            boolean contacted = isContacted(o.getStatus());
+            vo.setAssigneePhone(contacted ? assignee.getPhone() : null);
+        }
+    }
+
+    /** 是否已进入「已接单及之后」阶段：接单后才向报修人展示维修工手机号。 */
+    private boolean isContacted(String status) {
+        if (!StringUtils.hasText(status)) {
+            return false;
+        }
+        return switch (OrderStatus.of(status)) {
+            case ACCEPTED, PROCESSING, SUSPENDED, PENDING_CONFIRM, COMPLETED -> true;
+            default -> false;
+        };
     }
 
     private void fill(OrderDtos.OrderVO vo, RepairOrder o, LoginUser me) {

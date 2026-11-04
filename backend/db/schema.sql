@@ -29,6 +29,7 @@ CREATE TABLE sys_user (
   dept_id         BIGINT UNSIGNED DEFAULT NULL            COMMENT '所属部门',
   phone           VARCHAR(20)     DEFAULT NULL            COMMENT '手机号',
   avatar          VARCHAR(255)    DEFAULT NULL            COMMENT '头像 URL',
+  avatar_deadline DATETIME        DEFAULT NULL            COMMENT '头像强制更换截止时间（逾期未换则提示）',
   credit_score    INT             NOT NULL DEFAULT 100    COMMENT '信誉分（0-100）',
   status          TINYINT         NOT NULL DEFAULT 1      COMMENT '1正常 0禁用',
   pwd_reset_flag  TINYINT         NOT NULL DEFAULT 1      COMMENT '1需强制改密',
@@ -463,5 +464,25 @@ CREATE TABLE order_extension_request (
   KEY idx_order (order_id),
   KEY idx_status (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='延期确认申请';
+
+DROP TABLE IF EXISTS profile_change_request;
+CREATE TABLE profile_change_request (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  applicant_id  BIGINT UNSIGNED NOT NULL COMMENT '申请人（维修工）',
+  field_key     VARCHAR(30)  NOT NULL COMMENT '字段标识 real_name/staff_no/dept_name',
+  field_label   VARCHAR(30)  NOT NULL COMMENT '字段中文名',
+  old_value     VARCHAR(100) DEFAULT NULL COMMENT '原值',
+  new_value     VARCHAR(100) NOT NULL COMMENT '申请的新值',
+  reason        VARCHAR(500) NOT NULL COMMENT '申请理由',
+  status        VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/APPROVED/REJECTED',
+  reviewer_id   BIGINT UNSIGNED DEFAULT NULL COMMENT '审核人（后勤管理员）',
+  reject_reason VARCHAR(500) DEFAULT NULL COMMENT '打回原因',
+  reviewed_at   DATETIME DEFAULT NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_applicant (applicant_id, status, created_at),
+  KEY idx_status (status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='维修工信息更改申请';
 
 SET FOREIGN_KEY_CHECKS = 1;
