@@ -15,7 +15,7 @@
       <ul class="feat">
         <li>
           <span class="ic"><Icon name="receipt" :size="15" /></span>
-          <span>工单状态机驱动，越权流转会被后端拦截</span>
+          <span>每一次流转都有记录，进度随时可查</span>
         </li>
         <li>
           <span class="ic"><Icon name="bolt" :size="15" /></span>
@@ -23,7 +23,7 @@
         </li>
         <li>
           <span class="ic"><Icon name="shield" :size="15" /></span>
-          <span>四类角色分权，数据按部门与归属隔离</span>
+          <span>四类角色各司其职，只看到与自己相关的内容</span>
         </li>
       </ul>
 
@@ -70,15 +70,7 @@
           <span v-else class="spin" style="width: 16px; height: 16px" />
         </button>
 
-        <div class="acc-hint">
-          <div class="t">测试账号（密码均为 Cf@123456）</div>
-          <div class="list">
-            <span v-for="a in accounts" :key="a.username" class="acc" @click="fill(a.username)">
-              <span class="role-dot" :style="{ background: a.color }" />
-              {{ a.label }} {{ a.username }}
-            </span>
-          </div>
-        </div>
+        <p class="acc-help">账号由学校统一开通，忘记密码请联系后勤管理员重置</p>
       </div>
     </section>
   </div>
@@ -95,24 +87,11 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
-const username = ref('1000')
-const password = ref('Cf@123456')
+const username = ref('')
+const password = ref('')
 const loading = ref(false)
 const error = ref('')
 const showPwd = ref(false)
-
-const accounts = [
-  { username: '1000', label: '系统管理员', color: '#e63946' },
-  { username: '20001', label: '后勤管理员', color: '#f59e0b' },
-  { username: '30001', label: '维修人员', color: '#4f6ef7' },
-  { username: '2021001', label: '学生', color: '#0ea5a4' }
-]
-
-function fill(name: string) {
-  username.value = name
-  password.value = 'Cf@123456'
-  error.value = ''
-}
 
 async function onSubmit() {
   if (loading.value) return

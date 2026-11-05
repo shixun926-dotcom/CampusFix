@@ -4,7 +4,7 @@
       <div>
         <span class="eyebrow">Identity & Access</span>
         <h1>用户管理</h1>
-        <p class="sub">账号由管理员按学号 / 工号注入，学生无需注册</p>
+        <p class="sub">账号由管理员统一开通，学生无需注册</p>
       </div>
       <div class="hd-btns">
         <button class="btn btn-sm" @click="load">

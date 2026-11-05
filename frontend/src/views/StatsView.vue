@@ -24,7 +24,7 @@
       <div class="kpi">
         <div class="l"><Icon name="chart" :size="14" />投诉率</div>
         <div class="v">{{ complaint.ratePercent }}<small>%</small></div>
-        <div class="d"><span class="muted">口径：投诉数 / (总单数 + 10)</span></div>
+        <div class="d"><span class="muted">投诉单量占全部工单的比例</span></div>
       </div>
       <div class="kpi warn">
         <div class="l"><Icon name="alert" :size="14" />待受理投诉</div>
@@ -44,7 +44,7 @@
         <div class="panel-hd">
           <div>
             <h3>维修工绩效排行</h3>
-            <span class="sb">按加权平均分排序 · 好评率 = 总分 ≥4 占比</span>
+            <span class="sb">按平均分排序 · 好评率按 4 分及以上占比</span>
           </div>
           <span class="spacer" />
           <span class="tag tag-brand">洞察</span>

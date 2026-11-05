@@ -3,7 +3,7 @@
     <div class="page-hd">
       <div>
         <h1>投诉管理</h1>
-        <p class="sub">按部门分片受理，结论为「成立」时自动扣减被投诉维修人员信誉分 10 分</p>
+        <p class="sub">按管辖部门受理，结论为「成立」时扣减被投诉维修人员信誉分 10 分</p>
       </div>
       <button class="btn btn-sm" @click="load">
         <Icon name="refresh" :size="15" />刷新

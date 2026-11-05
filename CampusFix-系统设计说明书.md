@@ -504,7 +504,7 @@ HTTP 状态码：业务错误统一 200 + `code`；并发冲突 409；未认证 
 
 | 方法 | 路径 | 说明 | 权限 |
 |---|---|---|---|
-| POST | `/auth/login` | 账号密码登录，返回 access/refresh | 匿名 |
+| POST | `/auth/login` | 账号密码登录，返回 access/refresh；`username` 支持**登录名 / 学号 / 工号**三种写法（依次回退匹配） | 匿名 |
 | POST | `/auth/refresh` | 刷新令牌 | 匿名（需 refresh） |
 | POST | `/auth/logout` | 注销，清 Redis 白名单 | 登录 |
 | GET | `/auth/me` | 当前用户信息 + 权限码 + 菜单 | 登录 |

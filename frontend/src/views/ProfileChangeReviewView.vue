@@ -30,7 +30,7 @@
           <tr>
             <th style="width: 110px">申请人</th>
             <th style="width: 90px">工号</th>
-            <th style="width: 90px">字段</th>
+            <th style="width: 90px">变更项目</th>
             <th>变更内容</th>
             <th>申请理由</th>
             <th style="width: 90px; text-align: center">状态</th>

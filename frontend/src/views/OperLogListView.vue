@@ -3,7 +3,7 @@
     <div class="page-hd">
       <div>
         <h1>操作日志</h1>
-        <p class="sub">记录管理端与业务关键写操作的执行情况，成败均落库，用于审计与问题回溯</p>
+        <p class="sub">记录关键操作的执行情况与结果，用于审计与问题追溯</p>
       </div>
       <button class="btn btn-sm" @click="load">
         <Icon name="refresh" :size="15" />刷新
@@ -47,7 +47,7 @@
             <th style="width: 96px">操作人</th>
             <th style="width: 96px">模块</th>
             <th style="width: 110px">操作</th>
-            <th>接口</th>
+            <th>操作入口</th>
             <th style="width: 92px; text-align: center">结果</th>
             <th style="width: 76px; text-align: right">耗时</th>
             <th style="width: 72px">操作</th>
@@ -111,9 +111,9 @@
     <!-- 参数详情弹窗 -->
     <Modal :open="detailOpen" :title="detail?.operation || '日志详情'" @close="detailOpen = false">
       <div v-if="detail" class="detail">
-        <div class="d-row"><b>操作人</b><span>{{ detail.username || '—' }}（ID {{ detail.userId }}）</span></div>
+        <div class="d-row"><b>操作人</b><span>{{ detail.username || '—' }}</span></div>
         <div class="d-row"><b>模块 / 操作</b><span>{{ detail.module }} · {{ detail.operation }}</span></div>
-        <div class="d-row"><b>接口</b><span class="mono">{{ detail.method }}</span></div>
+        <div class="d-row"><b>请求方式</b><span class="mono">{{ detail.method }}</span></div>
         <div class="d-row"><b>地址</b><span class="mono">{{ detail.requestUri }}</span></div>
         <div class="d-row"><b>IP</b><span class="mono">{{ detail.ip || '—' }}</span></div>
         <div class="d-row"><b>时间 / 耗时</b><span>{{ detail.createdAt }} · {{ detail.costMs }}ms</span></div>
@@ -129,7 +129,7 @@
           <div class="d-row"><b>错误信息</b><span class="err">{{ detail.errorMsg }}</span></div>
         </template>
         <div class="d-row col">
-          <b>请求参数（已脱敏）</b>
+          <b>操作参数（敏感信息已隐藏）</b>
           <pre class="param">{{ prettyParam }}</pre>
         </div>
       </div>

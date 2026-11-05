@@ -70,14 +70,13 @@ describe('LoginView 登录页交互', () => {
       expect(pushMock).toHaveBeenCalledWith('/dashboard')
     })
 
-    it('点击测试账号可一键填充账号密码', async () => {
+    it('不展示测试账号与预填凭据，仅提示账号由学校统一开通', () => {
       const wrapper = mountLogin()
-      const acc = wrapper.findAll('.acc')
-      // 第一个是系统管理员 1000
-      await acc[0].trigger('click')
-
+      expect(wrapper.find('.acc').exists()).toBe(false)
+      expect(wrapper.text()).not.toContain('测试账号')
+      expect(wrapper.text()).toContain('账号由学校统一开通')
       const usernameInput = wrapper.find('input[placeholder="学号 / 工号"]')
-      expect((usernameInput.element as HTMLInputElement).value).toBe('1000')
+      expect((usernameInput.element as HTMLInputElement).value).toBe('')
     })
   })
 

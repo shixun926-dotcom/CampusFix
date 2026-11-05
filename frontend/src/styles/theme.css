@@ -611,17 +611,15 @@ table.tbl .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, Menlo, m
   color: var(--ink-3); transition: .15s;
 }
 .input-wrap .eye:hover { background: var(--line-2); color: var(--ink-2); }
-.acc-hint { margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--line); }
-.acc-hint .t { font-size: 11.5px; color: var(--ink-3); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
-.acc-hint .t::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
-.acc-hint .list { display: flex; flex-wrap: wrap; gap: 7px; }
-.acc-hint .acc {
-  font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer;
-  background: #f6f7fa; color: var(--ink-2); border: 1px solid transparent; transition: .15s;
-  display: inline-flex; align-items: center; gap: 6px;
+.acc-help {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--ink-3);
+  text-align: center;
 }
-.acc-hint .acc .role-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
-.acc-hint .acc:hover { background: var(--brand-l); color: var(--brand); border-color: #f8d4d8; }
 .err-text { color: var(--crit); font-size: 12.5px; margin-top: -4px; margin-bottom: 12px; }
 
 /* ------------------------------------------------- 10. 表单弹窗 / 导入 */

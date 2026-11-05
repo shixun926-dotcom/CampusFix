@@ -66,8 +66,7 @@ public class AuthService {
             throw new BizException(ResultCode.ACCOUNT_LOCKED);
         }
 
-        SysUser user = userMapper.selectOne(
-                new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username));
+        SysUser user = findByLoginName(username);
 
         if (user == null || !passwordEncoder.matches(req.password(), user.getPassword())) {
             tokenStore.increment(failKey, LOCK_TTL.getSeconds());
@@ -179,6 +178,26 @@ public class AuthService {
         }
         loginUser.setPermissions(permissions);
         return loginUser;
+    }
+
+    /**
+     * 按登录名定位账号：优先匹配登录名（username），未命中时回退匹配学号 / 工号。
+     *
+     * <p>登录页对外承诺「使用学号或工号登录」，而 {@code sys_user.username} 与
+     * {@code student_no} / {@code staff_no} 在部分场景并不相同（如演示账号），
+     * 因此这里做三级回退，保证三种写法都能登录。三个字段均为唯一索引，
+     * 逐级查询可避免跨字段同名时 {@code selectOne} 抛异常。</p>
+     */
+    private SysUser findByLoginName(String loginName) {
+        SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getUsername, loginName)
+                .last("LIMIT 1"));
+        if (user != null) {
+            return user;
+        }
+        return userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+                .and(w -> w.eq(SysUser::getStudentNo, loginName).or().eq(SysUser::getStaffNo, loginName))
+                .last("LIMIT 1"));
     }
 
     private void writeLoginLog(Long userId, String username, HttpServletRequest request, int status, String msg) {

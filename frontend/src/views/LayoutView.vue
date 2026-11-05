@@ -175,9 +175,6 @@
               <div class="um-roles">
                 <span v-for="r in auth.roles" :key="r" class="tag tag-brand">{{ roleLabel(r) }}</span>
               </div>
-              <button v-if="!isClient" class="um-item" @click="openSwagger">
-                <Icon name="file" :size="16" />接口文档
-              </button>
               <button class="um-item danger" @click="onLogout">
                 <Icon name="logout" :size="16" />退出登录
               </button>
@@ -203,7 +200,6 @@ import { useRoute, useRouter } from 'vue-router'
 import Icon from '../ui/Icon.vue'
 import { confirmDialog } from '../ui/dialog'
 import { toast, toastOk } from '../ui/toast'
-import { swaggerUrl } from '../config/env'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationStore } from '../stores/notification'
 import {
@@ -352,11 +348,6 @@ unsubscribePush = onPush((frame) => {
 function goAllNotifications() {
   notiOpen.value = false
   router.push('/notifications')
-}
-
-function openSwagger() {
-  menuOpen.value = false
-  window.open(swaggerUrl(), '_blank')
 }
 
 async function onLogout() {

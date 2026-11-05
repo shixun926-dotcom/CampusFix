@@ -116,16 +116,16 @@
         <div class="panel-bd">
           <div class="change-form">
             <div class="fg">
-              <label class="lbl">更改字段 <span class="req">*</span></label>
+              <label class="lbl">更改项目 <span class="req">*</span></label>
               <select v-model="changeForm.fieldKey" class="field">
-                <option value="" disabled>请选择要更改的字段</option>
+                <option value="" disabled>请选择要更改的信息</option>
                 <option value="real_name">姓名</option>
                 <option value="staff_no">工号</option>
                 <option value="dept">所属区域</option>
               </select>
             </div>
             <div class="fg">
-              <label class="lbl">新值 <span class="req">*</span></label>
+              <label class="lbl">新内容 <span class="req">*</span></label>
               <input
                 v-model="changeForm.newValue"
                 class="field"
@@ -265,7 +265,7 @@ const changePlaceholder = computed(() => {
     case 'dept':
       return '请输入正确的所属区域名称'
     default:
-      return '请先选择要更改的字段'
+      return '请先选择要更改的信息'
   }
 })
 
@@ -397,12 +397,12 @@ function onReset() {
 
 async function onSubmitChange() {
   if (!changeForm.fieldKey) {
-    toastErr('请选择要更改的字段')
+    toastErr('请选择要更改的信息')
     return
   }
   const newValue = changeForm.newValue.trim()
   if (!newValue) {
-    changeErrors.newValue = '新值不能为空'
+    changeErrors.newValue = '新内容不能为空'
     return
   }
   changeErrors.newValue = ''

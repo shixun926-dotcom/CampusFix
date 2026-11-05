@@ -39,7 +39,6 @@
 
         <div class="hero-meta">
           <span><Icon name="shield" :size="14" />{{ roleText }}</span>
-          <span><Icon name="key" :size="14" />{{ auth.permissions.length }} 项权限</span>
           <span><Icon name="calendar" :size="14" />{{ todayText }}</span>
         </div>
       </div>
@@ -138,7 +137,6 @@
               <span class="sb">最近 7 天新增工单 · 共 {{ trendTotal }} 张</span>
             </div>
             <span class="spacer" />
-            <span class="tag tag-brand">后端聚合</span>
           </div>
           <div class="panel-bd">
             <div class="chart">
@@ -305,43 +303,10 @@
               <span class="q-t">用户管理</span>
               <span class="q-d">账号与角色维护</span>
             </button>
-            <button class="quick-card" type="button" @click="openSwagger">
-              <span class="q-ic teal"><Icon name="file" :size="17" /></span>
-              <span class="q-t">接口文档</span>
-              <span class="q-d">Swagger 在线调试</span>
-            </button>
           </div>
         </section>
       </div>
     </div>
-
-    <!-- ======================= 建设进度 ======================= -->
-    <section class="panel progress-panel">
-      <div class="panel-hd">
-        <div>
-          <h3>平台建设进度</h3>
-          <span class="sb">随代码同步更新</span>
-        </div>
-        <span class="spacer" />
-        <span class="tag tag-ok">第 2 阶段</span>
-      </div>
-      <div class="panel-bd">
-        <div class="steps">
-          <div v-for="item in progress" :key="item.title" class="step" :class="item.state">
-            <span class="step-dot">
-              <Icon :name="item.state === 'done' ? 'check' : item.state === 'doing' ? 'bolt' : 'dot'" :size="13" />
-            </span>
-            <div class="step-body">
-              <div class="step-t">
-                {{ item.title }}
-                <span class="tag" :class="item.tagClass">{{ item.tag }}</span>
-              </div>
-              <div class="step-d">{{ item.desc }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <NewOrderModal :open="newOpen" @close="newOpen = false" @created="onCreated" />
   </div>
@@ -355,7 +320,6 @@ import OrderStatusTag from '../ui/OrderStatusTag.vue'
 import NewOrderModal from './NewOrderModal.vue'
 import StudentHome from './dashboards/StudentHome.vue'
 import RepairerHome from './dashboards/RepairerHome.vue'
-import { swaggerUrl } from '../config/env'
 import { useAuthStore } from '../stores/auth'
 import { pageOrders, type OrderVO } from '../api/order'
 import {
@@ -663,64 +627,6 @@ function openOrder(id: number) {
 function onCreated() {
   load()
   router.push('/orders')
-}
-
-/* ------------------------------ 建设进度 ------------------------------ */
-
-const progress = [
-  {
-    title: '数据库与测试数据',
-    desc: '25 张表 · 15 个账号 · 覆盖全状态的工单',
-    state: 'done',
-    tag: '已完成',
-    tagClass: 'tag-ok'
-  },
-  {
-    title: '认证与权限体系',
-    desc: 'JWT + 白名单 · RBAC 五表 · 方法级鉴权',
-    state: 'done',
-    tag: '已完成',
-    tagClass: 'tag-ok'
-  },
-  {
-    title: '用户与基础数据',
-    desc: '分页、启停、重置密码、信誉分流水、Excel 导入',
-    state: 'done',
-    tag: '已完成',
-    tagClass: 'tag-ok'
-  },
-  {
-    title: '工单状态机与派单',
-    desc: '17 个动作 / 18 条合法边 · 审核 · 指派 / 抢单 · 24h 自动派单',
-    state: 'done',
-    tag: '已完成',
-    tagClass: 'tag-ok'
-  },
-  {
-    title: '预约与维修过程',
-    desc: '时段提供与改约 · 到达打点 · 维修记录与前后照片',
-    state: 'done',
-    tag: '已完成',
-    tagClass: 'tag-ok'
-  },
-  {
-    title: '验收、评价与聊天',
-    desc: '确认验收 · 返修质保 · 三维评价 · 投诉 · 站内通知与工单聊天',
-    state: 'done',
-    tag: '已完成',
-    tagClass: 'tag-ok'
-  },
-  {
-    title: '统计与预警',
-    desc: '后端聚合统计 · 设施状态联动 · 楼栋分布 · 重复故障预警',
-    state: 'doing',
-    tag: '进行中',
-    tagClass: 'tag-brand'
-  }
-]
-
-function openSwagger() {
-  window.open(swaggerUrl(), '_blank')
 }
 </script>
 
@@ -1383,6 +1289,16 @@ function openSwagger() {
   transform: translateY(-2px);
   box-shadow: var(--sh-1);
 }
+/* 卡片数为奇数时最后一张通栏，避免右下角留空、保持版面平衡 */
+.quick-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+}
+.quick-card:last-child:nth-child(odd) .q-t { margin-right: auto; }
+.quick-card:last-child:nth-child(odd) .q-d { text-align: right; }
 .q-ic {
   width: 34px;
   height: 34px;
@@ -1395,69 +1311,8 @@ function openSwagger() {
 }
 .q-ic.accent { background: var(--accent-l); color: var(--accent); }
 .q-ic.violet { background: #f1edff; color: var(--violet); }
-.q-ic.teal { background: #e6f8f7; color: var(--teal); }
 .q-t { font-size: 13px; font-weight: 600; color: var(--ink); }
 .q-d { font-size: 10.5px; color: var(--ink-3); line-height: 1.5; }
-
-/* 建设进度 */
-.progress-panel .panel-bd { padding-top: 22px; padding-bottom: 24px; }
-.steps {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-}
-.step {
-  position: relative;
-  padding-right: 16px;
-  min-width: 0;
-}
-.step::before {
-  content: "";
-  position: absolute;
-  left: 28px;
-  right: 2px;
-  top: 13px;
-  height: 2px;
-  background: var(--line-2);
-  border-radius: 2px;
-}
-.step:last-child::before { display: none; }
-.step.done::before { background: linear-gradient(90deg, #a7e6c3, #12a150); }
-.step.doing::before { background: linear-gradient(90deg, #f6b8bd, #f3d7da); }
-.step-dot {
-  width: 27px;
-  height: 27px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #fff;
-  border: 2px solid var(--line);
-  color: var(--ink-3);
-  position: relative;
-  z-index: 1;
-}
-.step.done .step-dot { background: var(--ok); border-color: var(--ok); color: #fff; }
-.step.doing .step-dot {
-  background: #fff;
-  border-color: var(--brand);
-  color: var(--brand);
-  box-shadow: 0 0 0 4px var(--brand-l);
-}
-.step-body { margin-top: 11px; padding-right: 10px; }
-.step-t {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.step-d {
-  font-size: 11px;
-  color: var(--ink-3);
-  margin-top: 3px;
-  line-height: 1.55;
-}
 
 /* ------------------------------------------------ 响应式 */
 @media (max-width: 1250px) {
@@ -1468,8 +1323,6 @@ function openSwagger() {
 @media (max-width: 1080px) {
   .hero { grid-template-columns: 1fr; padding: 26px 26px 24px; }
   .hero-art { display: none; }
-  .steps { grid-template-columns: repeat(2, 1fr); row-gap: 20px; }
-  .step::before { display: none; }
 }
 @media (max-width: 720px) {
   .eyebrow-date { display: none; }
@@ -1482,7 +1335,6 @@ function openSwagger() {
   .hero-title em { font-size: 19px; }
   .legend { grid-template-columns: 1fr; }
   .recent-time { display: none; }
-  .steps { grid-template-columns: 1fr; }
   .quick-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>
