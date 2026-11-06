@@ -44,6 +44,41 @@ public final class UserDtos {
         private List<String> roleCodes;
     }
 
+    /**
+     * 编辑用户基本信息（部分更新）。
+     *
+     * <p>字段语义：{@code null} 表示「不修改」；空串表示「清除」（仅 phone / className）；
+     * {@code deptId = 0} 表示「清除所属部门」。后端据此拼装动态 SQL，
+     * 只更新本次提交且确有变化的列，避免全量覆盖误清空。</p>
+     */
+    @Data
+    public static class BasicUpdateRequest {
+
+        @Size(max = 50, message = "姓名不能超过 50 字")
+        @Pattern(regexp = "^$|^[\\u4e00-\\u9fa5A-Za-z·\\s]{1,50}$", message = "姓名仅支持中文、字母、空格与·")
+        private String realName;
+
+        /** null=不修改；空串=清除 */
+        @Pattern(regexp = "^$|^1[3-9]\\d{9}$", message = "手机号格式不正确")
+        private String phone;
+
+        /** null=不修改；空串=清除（仅学生可能持有） */
+        @Size(max = 50, message = "班级不能超过 50 字")
+        private String className;
+
+        /** null=不修改；0=清除；其余为部门 ID */
+        private Long deptId;
+
+        /** null=不修改；仅允许 0（禁用）/ 1（启用） */
+        private Integer status;
+
+        /** null=不修改；非 null 时整体替换角色集合 */
+        private List<String> roleCodes;
+
+        /** 可选乐观校验：传上次读取到的 updated_at，不一致则拒绝 */
+        private LocalDateTime expectedUpdatedAt;
+    }
+
     @Data
     public static class UserVO {
         private Long id;

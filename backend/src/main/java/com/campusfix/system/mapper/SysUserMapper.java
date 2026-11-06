@@ -1,10 +1,12 @@
 package com.campusfix.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.campusfix.system.dto.UserDtos;
 import com.campusfix.system.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -54,4 +56,35 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
             </script>
             """)
     List<SysUser> selectEnabledByRoles(@Param("roleCodes") List<String> roleCodes);
+
+    /**
+     * 编辑用户基本信息：<b>动态 SQL</b>，只更新请求中显式提交的列。
+     *
+     * <p>约定：{@code null} 字段不出现在 SET 子句（保持原值）；
+     * {@code phone}/{@code className} 传空串时经 {@code NULLIF} 置 NULL；
+     * {@code deptId} 传 0 时经 {@code NULLIF} 置 NULL（清除部门）。
+     * {@code <set>} 自动去除末尾逗号，保证任意字段组合下 SQL 合法。</p>
+     *
+     * <p>传 {@code expectedUpdatedAt} 时追加乐观校验条件，影响行数为 0 即视为并发冲突。</p>
+     *
+     * @return 影响行数（0 表示用户不存在/已删除，或乐观校验失败）
+     */
+    @Update("""
+            <script>
+            UPDATE sys_user
+            <set>
+              <if test="req.realName != null">real_name = #{req.realName},</if>
+              <if test="req.phone != null">phone = NULLIF(#{req.phone}, ''),</if>
+              <if test="req.className != null">class_name = NULLIF(#{req.className}, ''),</if>
+              <if test="req.deptId != null">dept_id = NULLIF(#{req.deptId}, 0),</if>
+              <if test="req.status != null">status = #{req.status},</if>
+              updated_at = NOW()
+            </set>
+            WHERE id = #{id} AND deleted = 0
+            <if test="req.expectedUpdatedAt != null">
+              AND updated_at = #{req.expectedUpdatedAt}
+            </if>
+            </script>
+            """)
+    int updateBasic(@Param("id") Long id, @Param("req") UserDtos.BasicUpdateRequest req);
 }

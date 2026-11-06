@@ -517,7 +517,8 @@ HTTP 状态码：业务错误统一 200 + `code`；并发冲突 409；未认证 
 | GET | `/users` | 分页查询（关键字/角色/部门/状态） | `user:list` |
 | GET | `/users/{id}` | 详情 | `user:list` |
 | POST | `/users` | 新增 | `user:add` |
-| PUT | `/users/{id}` | 修改 | `user:edit` |
+| PUT | `/users/{id}` | 修改（全量覆盖，保留兼容） | `user:edit` |
+| PUT | `/users/{id}/basic` | **编辑基本信息**（部分更新，动态 SQL：null=不改、空串=清除、deptId=0 清除部门） | `user:edit` |
 | PUT | `/users/{id}/status` | 启用/禁用 | `user:edit` |
 | PUT | `/users/{id}/reset-password` | 重置密码 | `user:edit` |
 | POST | `/users/students` | 手动添加单个学生（姓名/学号/班级/手机号） | `user:add` |

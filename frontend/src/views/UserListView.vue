@@ -144,9 +144,14 @@
               {{ row.lastLoginAt || '从未登录' }}
             </td>
             <td>
-              <button class="btn btn-sm btn-ghost reset-btn" @click="onResetPwd(row)">
-                <Icon name="key" :size="14" />重置
-              </button>
+              <div class="row-acts">
+                <button v-if="canEdit" class="btn btn-sm btn-ghost" @click="openEdit(row)">
+                  <Icon name="edit" :size="14" />编辑
+                </button>
+                <button class="btn btn-sm btn-ghost reset-btn" @click="onResetPwd(row)">
+                  <Icon name="key" :size="14" />重置
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -287,12 +292,21 @@
         <button v-else class="btn btn-primary" @click="finishImport">完成</button>
       </template>
     </Modal>
+
+    <!-- ==================== 编辑用户 ==================== -->
+    <UserEditModal
+      :open="editOpen"
+      :user-id="editUserId"
+      @close="editOpen = false"
+      @saved="onEditSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import Icon from '../ui/Icon.vue'
+import UserEditModal from './UserEditModal.vue'
 import Modal from '../ui/Modal.vue'
 import { confirmDialog } from '../ui/dialog'
 import { toastErr, toastOk } from '../ui/toast'
@@ -304,12 +318,14 @@ import {
   pageUsers,
   resetPassword,
   toggleUserStatus,
-  type ImportResult
+  type ImportResult,
+  type UserVO
 } from '../api/system'
 
 const auth = useAuthStore()
 const canAdd = computed(() => auth.has('user:add'))
 const canImport = computed(() => auth.has('user:import'))
+const canEdit = computed(() => auth.has('user:edit'))
 
 const loading = ref(false)
 const rows = ref<any[]>([])
@@ -417,6 +433,22 @@ async function onResetPwd(row: any) {
   } catch {
     toastErr('重置失败，请稍后重试')
   }
+}
+
+/* ---------------------------- 编辑用户 ---------------------------- */
+
+const editOpen = ref(false)
+const editUserId = ref<number | null>(null)
+
+function openEdit(row: any) {
+  editUserId.value = row.id
+  editOpen.value = true
+}
+
+/** 用后端返回的最新 VO 就地替换该行，避免整页重新加载 */
+function onEditSaved(user: UserVO) {
+  const i = rows.value.findIndex((r) => r.id === user.id)
+  if (i >= 0) rows.value[i] = { ...rows.value[i], ...user }
 }
 
 function roleTagClass(code?: string) {
@@ -710,6 +742,12 @@ onMounted(load)
 }
 .credit-bar i.low {
   background: linear-gradient(90deg, #f87171, #dc3545);
+}
+.row-acts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 .reset-btn {
   color: var(--ink-2);

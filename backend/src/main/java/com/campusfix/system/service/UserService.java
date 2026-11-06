@@ -7,6 +7,7 @@ import com.campusfix.common.enums.RoleCode;
 import com.campusfix.common.exception.BizException;
 import com.campusfix.common.result.PageResult;
 import com.campusfix.common.result.ResultCode;
+import com.campusfix.common.security.CurrentUserHolder;
 import com.campusfix.common.security.JwtTokenProvider;
 import com.campusfix.system.dto.UserDtos;
 import com.campusfix.system.entity.SysCreditLog;
@@ -23,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -137,6 +140,201 @@ public class UserService {
         if (req.getRoleCodes() != null) {
             assignRoles(id, req.getRoleCodes());
             tokenProvider.logoutAll(id);
+        }
+    }
+
+    /**
+     * 编辑用户基本信息（部分更新，动态 SQL）。
+     *
+     * <p>字段语义见 {@link UserDtos.BasicUpdateRequest}：null 不修改、空串清除、
+     * deptId=0 清除部门。与既有 {@link #update} 的全量覆盖不同，本方法只写
+     * 「本次提交且确有变化」的列。</p>
+     *
+     * <p>业务规则（违反即拒绝）：</p>
+     * <ol>
+     *   <li>至少保留一个角色，且角色必须存在并启用；</li>
+     *   <li>学生与教职工角色互斥（STUDENT 不可与 REPAIRER/MANAGER/ADMIN 并存）；</li>
+     *   <li>学生必须填写班级且不挂部门；教职工必须选择存在的启用部门且不挂班级；</li>
+     *   <li>不能禁用自己、不能移除自己的管理员角色；</li>
+     *   <li>不能禁用或降级「最后一个启用的系统管理员」。</li>
+     * </ol>
+     *
+     * <p>角色 / 部门 / 禁用变更会在事务提交后注销该用户全部令牌，
+     * 使权限与数据范围立即生效（登录快照缓存在 Redis 中）。</p>
+     */
+    @Transactional
+    public UserDtos.UserVO updateBasic(Long id, UserDtos.BasicUpdateRequest req) {
+        SysUser exist = userMapper.selectById(id);
+        if (exist == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "用户不存在");
+        }
+        if (req.getRealName() == null && req.getPhone() == null && req.getClassName() == null
+                && req.getDeptId() == null && req.getStatus() == null && req.getRoleCodes() == null) {
+            throw new BizException(ResultCode.PARAM_INVALID, "没有需要更新的内容");
+        }
+
+        List<String> currentRoles = roleCodesOf(id);
+        boolean roleChange = req.getRoleCodes() != null;
+        List<String> targetRoles = roleChange ? normalizeRoles(req.getRoleCodes()) : currentRoles;
+
+        boolean isStudent = targetRoles.contains(RoleCode.STUDENT);
+        boolean isStaff = targetRoles.stream()
+                .anyMatch(r -> RoleCode.REPAIRER.equals(r) || RoleCode.MANAGER.equals(r) || RoleCode.ADMIN.equals(r));
+
+        // R1 至少一个角色
+        if (targetRoles.isEmpty()) {
+            throw new BizException(ResultCode.PARAM_INVALID, "至少保留一个角色");
+        }
+        // 角色必须存在且启用
+        if (roleChange) {
+            long valid = roleMapper.selectCount(new LambdaQueryWrapper<SysRole>()
+                    .in(SysRole::getCode, targetRoles)
+                    .eq(SysRole::getStatus, 1));
+            if (valid != targetRoles.size()) {
+                throw new BizException(ResultCode.PARAM_INVALID, "存在无效或已停用的角色");
+            }
+        }
+        if (isStudent && isStaff) {
+            throw new BizException(ResultCode.PARAM_INVALID, "学生与教职工角色不能同时选择");
+        }
+
+        // 目标终态：未提交的字段沿用原值
+        String desiredClassName = req.getClassName() != null ? req.getClassName() : exist.getClassName();
+        Long desiredDeptId = req.getDeptId() == null ? exist.getDeptId()
+                : (req.getDeptId() == 0L ? null : req.getDeptId());
+        Integer desiredStatus = req.getStatus() != null ? req.getStatus() : exist.getStatus();
+
+        if (desiredStatus == null || (desiredStatus != 0 && desiredStatus != 1)) {
+            throw new BizException(ResultCode.PARAM_INVALID, "状态只能是启用或禁用");
+        }
+
+        // R5 / R6 角色与班级、部门的一致性（仅在角色变更或显式提交对应字段时校验，
+        // 避免「只改手机号」也被历史脏数据拦住）
+        boolean deptSubmitted = req.getDeptId() != null;
+        if (isStudent) {
+            if ((roleChange || req.getClassName() != null) && !StringUtils.hasText(desiredClassName)) {
+                throw new BizException(ResultCode.PARAM_INVALID, "学生必须填写班级");
+            }
+            desiredDeptId = null;
+        } else if (isStaff) {
+            if (desiredDeptId == null) {
+                if (roleChange || deptSubmitted) {
+                    throw new BizException(ResultCode.PARAM_INVALID, "教职工必须选择所属部门");
+                }
+            } else if (roleChange || deptSubmitted) {
+                SysDept dept = deptMapper.selectById(desiredDeptId);
+                if (dept == null || dept.getStatus() == null || dept.getStatus() != 1) {
+                    throw new BizException(ResultCode.PARAM_INVALID, "所属部门不存在或已停用");
+                }
+            }
+            desiredClassName = null;
+        }
+
+        // R2 不能禁用自己
+        boolean self = id.equals(CurrentUserHolder.id());
+        if (self && desiredStatus == 0) {
+            throw new BizException(ResultCode.STATUS_NOT_ALLOWED, "不能禁用当前登录账号");
+        }
+        // R3 不能移除自己的管理员角色
+        if (self && currentRoles.contains(RoleCode.ADMIN) && !targetRoles.contains(RoleCode.ADMIN)) {
+            throw new BizException(ResultCode.STATUS_NOT_ALLOWED, "不能移除自己的系统管理员角色");
+        }
+        // R4 不能禁用或降级最后一个启用的系统管理员
+        boolean wasActiveAdmin = currentRoles.contains(RoleCode.ADMIN) && Integer.valueOf(1).equals(exist.getStatus());
+        boolean willBeActiveAdmin = targetRoles.contains(RoleCode.ADMIN) && Integer.valueOf(1).equals(desiredStatus);
+        if (wasActiveAdmin && !willBeActiveAdmin && activeAdminCountExcluding(id) == 0) {
+            throw new BizException(ResultCode.STATUS_NOT_ALLOWED, "系统至少保留一名启用的系统管理员");
+        }
+
+        // 只写有变化的列，保证动态 SQL 的 SET 子句最小化
+        UserDtos.BasicUpdateRequest patch = new UserDtos.BasicUpdateRequest();
+        boolean changed = false;
+        if (req.getRealName() != null && !req.getRealName().equals(exist.getRealName())) {
+            patch.setRealName(req.getRealName().trim());
+            changed = true;
+        }
+        if (req.getPhone() != null && !req.getPhone().equals(exist.getPhone())) {
+            patch.setPhone(req.getPhone().trim());
+            changed = true;
+        }
+        if (!java.util.Objects.equals(desiredClassName, exist.getClassName())) {
+            patch.setClassName(desiredClassName == null ? "" : desiredClassName.trim());
+            changed = true;
+        }
+        if (!java.util.Objects.equals(desiredDeptId, exist.getDeptId())) {
+            patch.setDeptId(desiredDeptId == null ? 0L : desiredDeptId);
+            changed = true;
+        }
+        if (!java.util.Objects.equals(desiredStatus, exist.getStatus())) {
+            patch.setStatus(desiredStatus);
+            changed = true;
+        }
+        patch.setExpectedUpdatedAt(req.getExpectedUpdatedAt());
+
+        if (changed) {
+            int rows = userMapper.updateBasic(id, patch);
+            if (rows == 0) {
+                if (req.getExpectedUpdatedAt() != null) {
+                    throw BizException.conflict(ResultCode.STATUS_CHANGED, "数据已变更，请刷新后重试");
+                }
+                throw new BizException(ResultCode.NOT_FOUND, "用户不存在");
+            }
+        }
+
+        boolean rolesChanged = roleChange && !new java.util.HashSet<>(currentRoles).equals(new java.util.HashSet<>(targetRoles));
+        if (rolesChanged) {
+            assignRoles(id, targetRoles);
+        }
+
+        log.info("编辑用户 id={} operator={} 变更={} 角色={} 部门={} 状态={}",
+                id, CurrentUserHolder.id(), changed, targetRoles, desiredDeptId, desiredStatus);
+
+        // 涉及鉴权快照的变更，提交后注销该用户全部令牌
+        boolean kick = rolesChanged
+                || !java.util.Objects.equals(desiredDeptId, exist.getDeptId())
+                || (Integer.valueOf(0).equals(desiredStatus) && !Integer.valueOf(0).equals(exist.getStatus()));
+        if (kick) {
+            logoutAfterCommit(id);
+        }
+
+        return detail(id);
+    }
+
+    /** 角色码规范化：去空、去重、转大写，保持稳定顺序。 */
+    private List<String> normalizeRoles(List<String> roleCodes) {
+        if (roleCodes == null) {
+            return List.of();
+        }
+        return roleCodes.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .distinct()
+                .toList();
+    }
+
+    /** 统计除指定用户外，仍处于启用状态的系统管理员数量。 */
+    private long activeAdminCountExcluding(Long excludeId) {
+        Long count = userMapper.selectCount(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getStatus, 1)
+                .ne(SysUser::getId, excludeId)
+                .inSql(SysUser::getId,
+                        "SELECT ur.user_id FROM sys_user_role ur JOIN sys_role r ON r.id = ur.role_id "
+                                + "WHERE r.code = '" + RoleCode.ADMIN + "'"));
+        return count == null ? 0 : count;
+    }
+
+    /** 事务提交后注销令牌；无事务上下文时立即执行。 */
+    private void logoutAfterCommit(Long userId) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    tokenProvider.logoutAll(userId);
+                }
+            });
+        } else {
+            tokenProvider.logoutAll(userId);
         }
     }
 

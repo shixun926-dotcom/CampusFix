@@ -99,6 +99,16 @@ public class UserController {
         return Result.ok();
     }
 
+    @Operation(summary = "编辑用户基本信息（部分更新，动态 SQL）")
+    @PutMapping("/{id}/basic")
+    @PreAuthorize("hasAuthority('user:edit')")
+    @OperLog(module = "用户管理", action = "编辑用户",
+            masked = {"password", "phone", "oldPassword", "newPassword"})
+    public Result<UserDtos.UserVO> updateBasic(@PathVariable Long id,
+                                               @Valid @RequestBody UserDtos.BasicUpdateRequest req) {
+        return Result.ok(userService.updateBasic(id, req));
+    }
+
     @Operation(summary = "启用/禁用")
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAuthority('user:edit')")
