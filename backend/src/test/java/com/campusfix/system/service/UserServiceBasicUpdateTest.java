@@ -4,6 +4,7 @@ import com.campusfix.common.exception.BizException;
 import com.campusfix.common.result.ResultCode;
 import com.campusfix.common.security.JwtTokenProvider;
 import com.campusfix.common.security.LoginUser;
+import com.campusfix.order.mapper.RepairOrderMapper;
 import com.campusfix.system.dto.UserDtos;
 import com.campusfix.system.entity.SysDept;
 import com.campusfix.system.entity.SysRole;
@@ -52,6 +53,7 @@ class UserServiceBasicUpdateTest {
     @Mock private SysRoleMapper roleMapper;
     @Mock private SysDeptMapper deptMapper;
     @Mock private SysCreditLogMapper creditLogMapper;
+    @Mock private RepairOrderMapper repairOrderMapper;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtTokenProvider tokenProvider;
 
@@ -63,7 +65,7 @@ class UserServiceBasicUpdateTest {
     @BeforeEach
     void setUp() {
         service = new UserService(userMapper, userRoleMapper, roleMapper, deptMapper,
-                creditLogMapper, passwordEncoder, tokenProvider);
+                creditLogMapper, repairOrderMapper, passwordEncoder, tokenProvider);
         loginAs(ADMIN_ID, "ADMIN");
         // detail() 组装 VO 时的公共依赖
         lenient().when(roleMapper.selectList(any())).thenReturn(List.of(

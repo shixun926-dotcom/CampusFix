@@ -32,6 +32,14 @@
         <h3>用户列表</h3>
         <span class="cnt">共 {{ total }} 条</span>
 
+        <div v-if="selectedIds.length" class="bulk-bar">
+          <span class="bulk-cnt">已选 <b>{{ selectedIds.length }}</b> 名</span>
+          <button v-if="canDelete" class="btn btn-sm btn-danger" :disabled="deleting" @click="onBatchDelete">
+            <Icon name="trash" :size="14" />{{ deleting ? '删除中…' : '批量删除' }}
+          </button>
+          <button class="btn btn-sm btn-ghost" @click="clearSelection">取消选择</button>
+        </div>
+
         <div class="toolbar" style="margin-left: auto">
           <input
             v-model="query.keyword"
@@ -60,6 +68,15 @@
       <table class="tbl">
         <thead>
           <tr>
+            <th class="chk-col">
+              <span
+                v-if="canDelete"
+                class="chk"
+                :class="{ on: allChecked, part: someChecked }"
+                :title="allChecked ? '取消全选' : '全选本页'"
+                @click="toggleAll"
+              />
+            </th>
             <th>用户</th>
             <th style="width: 150px">班级</th>
             <th style="width: 118px">部门</th>
@@ -68,18 +85,18 @@
             <th style="width: 118px">信誉分</th>
             <th style="width: 80px; text-align: center">状态</th>
             <th style="width: 150px">最后登录</th>
-            <th style="width: 96px">操作</th>
+            <th style="width: 172px">操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="9">
+            <td colspan="10">
               <div class="empty"><span class="spin" /><span class="d">加载中…</span></div>
             </td>
           </tr>
 
           <tr v-else-if="rows.length === 0">
-            <td colspan="9">
+            <td colspan="10">
               <div class="empty">
                 <span class="ico"><Icon name="users" :size="24" /></span>
                 <span class="t">没有匹配的账号</span>
@@ -88,7 +105,16 @@
             </td>
           </tr>
 
-          <tr v-for="row in rows" :key="row.id">
+          <tr v-for="row in rows" :key="row.id" :class="{ 'row-on': isSelected(row.id) }">
+            <td class="chk-col">
+              <span
+                v-if="canDelete"
+                class="chk"
+                :class="{ on: isSelected(row.id), off: isSelf(row) }"
+                :title="isSelf(row) ? '当前登录账号不可删除' : ''"
+                @click="toggleOne(row)"
+              />
+            </td>
             <td>
               <div class="user-cell">
                 <span class="avatar-sm user-avatar" :class="avatarTone(row)">{{ row.realName?.charAt(0) || 'U' }}</span>
@@ -150,6 +176,15 @@
                 </button>
                 <button class="btn btn-sm btn-ghost reset-btn" @click="onResetPwd(row)">
                   <Icon name="key" :size="14" />重置
+                </button>
+                <button
+                  v-if="canDelete"
+                  class="btn btn-sm btn-ghost del-btn"
+                  :disabled="isSelf(row)"
+                  :title="isSelf(row) ? '不能删除当前登录账号' : ''"
+                  @click="onDelete(row)"
+                >
+                  <Icon name="trash" :size="14" />删除
                 </button>
               </div>
             </td>
@@ -300,6 +335,39 @@
       @close="editOpen = false"
       @saved="onEditSaved"
     />
+
+    <!-- ==================== 删除结果（批量删除有跳过项时展示） ==================== -->
+    <Modal :open="delResultOpen" title="删除结果" width="560px" @close="delResultOpen = false">
+      <div class="del-sum">
+        <span class="del-ok"><Icon name="check" :size="15" />已删除 {{ delResult.success }} 名</span>
+        <span v-if="delResult.failed.length" class="del-bad">
+          <Icon name="alert" :size="15" />跳过 {{ delResult.failed.length }} 名
+        </span>
+      </div>
+
+      <table v-if="delResult.failed.length" class="tbl compact" style="margin-top: 12px">
+        <thead>
+          <tr>
+            <th style="width: 190px">成员</th>
+            <th>未删除原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="f in delResult.failed" :key="f.id">
+            <td>{{ f.name }}</td>
+            <td class="del-reason">{{ f.reason }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="del-tip">
+        被删除的成员将无法再登录，其历史工单、投诉与操作记录仍保留在系统中；如需重新开通，用同学号 / 工号新建即可。
+      </p>
+
+      <template #footer>
+        <button class="btn btn-primary" @click="delResultOpen = false">知道了</button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -313,11 +381,14 @@ import { toastErr, toastOk } from '../ui/toast'
 import { useAuthStore } from '../stores/auth'
 import {
   createStudent,
+  deleteUser,
+  deleteUsersBatch,
   downloadStudentTemplate,
   importStudents,
   pageUsers,
   resetPassword,
   toggleUserStatus,
+  type DeleteResult,
   type ImportResult,
   type UserVO
 } from '../api/system'
@@ -326,12 +397,54 @@ const auth = useAuthStore()
 const canAdd = computed(() => auth.has('user:add'))
 const canImport = computed(() => auth.has('user:import'))
 const canEdit = computed(() => auth.has('user:edit'))
+const canDelete = computed(() => auth.has('user:delete'))
 
 const loading = ref(false)
 const rows = ref<any[]>([])
 const total = ref(0)
 
 const query = reactive({ page: 1, size: 20, keyword: '', roleCode: '', status: '' as string })
+
+/* ---------------------------- 多选（删除用） ---------------------------- */
+
+/** 当前页已勾选的成员 id；翻页 / 重新查询后自动剔除已不在本页的项 */
+const selectedIds = ref<number[]>([])
+const deleting = ref(false)
+
+/** 当前登录账号 id：档案接口返回字段为 userId（兼容测试/旧快照的 id） */
+const currentUserId = computed(() => {
+  const u: any = auth.user
+  return Number(u?.userId ?? u?.id ?? 0)
+})
+const isSelf = (row: any) => currentUserId.value > 0 && Number(row.id) === currentUserId.value
+const isSelected = (id: number) => selectedIds.value.includes(id)
+const allChecked = computed(
+  () => rows.value.length > 0 && rows.value.every((r) => isSelected(r.id) || isSelf(r))
+)
+const someChecked = computed(
+  () => !allChecked.value && rows.value.some((r) => isSelected(r.id))
+)
+
+/** 单选：当前登录账号不允许勾选（后端同样会拒绝） */
+function toggleOne(row: any) {
+  if (isSelf(row)) return
+  const i = selectedIds.value.indexOf(row.id)
+  if (i >= 0) selectedIds.value.splice(i, 1)
+  else selectedIds.value.push(row.id)
+}
+
+/** 全选本页：已勾满时再点即取消 */
+function toggleAll() {
+  if (allChecked.value) {
+    selectedIds.value = []
+    return
+  }
+  selectedIds.value = rows.value.filter((r) => !isSelf(r)).map((r) => r.id)
+}
+
+function clearSelection() {
+  selectedIds.value = []
+}
 
 const pageSummary = computed(() => {
   const hasRole = (row: any, code: string) => (row.roleCodes || []).includes(code)
@@ -372,9 +485,12 @@ async function load() {
     })
     rows.value = data.list || []
     total.value = data.total || 0
+    // 翻页或删除后，剔除已不在本页/已删除的勾选项
+    selectedIds.value = selectedIds.value.filter((id) => rows.value.some((r: any) => r.id === id))
   } catch {
     rows.value = []
     total.value = 0
+    selectedIds.value = []
   } finally {
     loading.value = false
   }
@@ -435,6 +551,69 @@ async function onResetPwd(row: any) {
   }
 }
 
+/* ---------------------------- 删除 / 批量删除 ---------------------------- */
+
+const delResultOpen = ref(false)
+const delResult = reactive<DeleteResult>({ success: 0, failed: [] })
+
+/** 单条删除：二次确认 → 调接口 → 就地移除该行 */
+async function onDelete(row: any) {
+  const ok = await confirmDialog({
+    title: '删除成员',
+    message: `确定删除 ${row.realName}（${row.username}）？删除后该账号立即失效、无法登录；其历史工单与操作记录仍会保留。`,
+    okText: '删除',
+    danger: true
+  })
+  if (!ok) return
+
+  try {
+    await deleteUser(row.id)
+    rows.value = rows.value.filter((r) => r.id !== row.id)
+    total.value = Math.max(0, total.value - 1)
+    selectedIds.value = selectedIds.value.filter((id) => id !== row.id)
+    toastOk(`已删除 ${row.realName}`)
+  } catch {
+    // 统一错误提示（后端会说明不能删的原因）
+  }
+}
+
+/**
+ * 批量删除：逐条校验在后端完成，可能部分成功。
+ * 全部成功只弹轻提示；有跳过项时打开结果弹窗，逐条说明原因。
+ */
+async function onBatchDelete() {
+  const chosen = rows.value.filter((r) => selectedIds.value.includes(r.id) && !isSelf(r))
+  if (!chosen.length) return
+
+  const names = chosen.slice(0, 3).map((r) => r.realName).join('、')
+  const rest = chosen.length > 3 ? ` 等 ${chosen.length} 名` : ''
+  const ok = await confirmDialog({
+    title: '批量删除成员',
+    message: `将删除已选的 ${chosen.length} 名成员（${names}${rest}）。删除后账号立即失效；仍有未完结工单的成员会被跳过。`,
+    okText: `删除 ${chosen.length} 名`,
+    danger: true
+  })
+  if (!ok) return
+
+  deleting.value = true
+  try {
+    const res = await deleteUsersBatch(chosen.map((r) => r.id))
+    delResult.success = res?.success ?? 0
+    delResult.failed = res?.failed ?? []
+    clearSelection()
+    await load()
+    if (delResult.failed.length) {
+      delResultOpen.value = true
+    } else {
+      toastOk(`已删除 ${delResult.success} 名成员`)
+    }
+  } catch {
+    // 统一错误提示
+  } finally {
+    deleting.value = false
+  }
+}
+
 /* ---------------------------- 编辑用户 ---------------------------- */
 
 const editOpen = ref(false)
@@ -451,11 +630,9 @@ function onEditSaved(user: UserVO) {
   if (i >= 0) rows.value[i] = { ...rows.value[i], ...user }
 }
 
-function roleTagClass(code?: string) {
-  if (code === 'ADMIN') return 'tag-crit'
-  if (code === 'MANAGER') return 'tag-warn'
-  if (code === 'REPAIRER') return 'tag-brand'
-  return 'tag-ink'
+/** 角色标签统一为石板灰，角色差异由文字承载（避免整页出现多套色相） */
+function roleTagClass(_code?: string) {
+  return 'tag-slate'
 }
 
 function maskPhone(phone?: string) {
@@ -606,7 +783,18 @@ async function onDownloadTpl() {
   }
 }
 
-onMounted(load)
+onMounted(async () => {
+  await load()
+  // 权限快照在登录时写入本地，后台新增权限（如 user:delete）后不会自动生效，
+  // 因此本页懒刷新一次：无删除权限时静默拉取最新档案，拿到后按钮自动出现。
+  if (!canDelete.value) {
+    try {
+      await auth.fetchProfile()
+    } catch {
+      // 刷新失败不影响页面其余功能
+    }
+  }
+})
 </script>
 
 <style scoped>
@@ -754,7 +942,124 @@ onMounted(load)
   padding: 0 8px;
 }
 .reset-btn:hover {
-  background: var(--brand-l);
-  color: var(--brand);
+  background: var(--slate-100);
+  color: var(--slate-700);
+}
+
+/* ---------------- 多选与删除（沿用石板灰色系与既有 danger 语义色） ---------------- */
+
+.chk-col {
+  width: 40px;
+  text-align: center;
+}
+.chk {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+  vertical-align: middle;
+}
+.chk:hover {
+  border-color: var(--slate-400);
+}
+.chk.on,
+.chk.part {
+  background: var(--slate-900);
+  border-color: var(--slate-900);
+}
+.chk.on::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: 2px solid #fff;
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(42deg);
+}
+.chk.part::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  width: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background: #fff;
+}
+.chk.off {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.chk.off:hover {
+  border-color: var(--line);
+}
+table.tbl tbody tr.row-on {
+  background: var(--slate-50);
+}
+
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line-2);
+}
+.bulk-cnt {
+  font-size: 12.5px;
+  color: var(--slate-600);
+}
+.bulk-cnt b {
+  color: var(--slate-900);
+}
+
+.del-btn {
+  color: var(--crit);
+  padding: 0 8px;
+}
+.del-btn:hover:not(:disabled) {
+  background: #fdf3f4;
+  color: var(--crit);
+}
+.del-btn:disabled {
+  color: var(--ink-3);
+  opacity: 0.6;
+}
+
+.del-sum {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+.del-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--slate-900);
+  font-weight: 600;
+}
+.del-bad {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--crit);
+  font-weight: 600;
+}
+.del-reason {
+  color: var(--ink-2);
+}
+.del-tip {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.65;
 }
 </style>

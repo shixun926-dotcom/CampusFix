@@ -87,4 +87,28 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
             </script>
             """)
     int updateBasic(@Param("id") Long id, @Param("req") UserDtos.BasicUpdateRequest req);
+
+    /**
+     * 逻辑删除用户，并为唯一键打上墓碑标记。
+     *
+     * <p>{@code username / student_no / staff_no} 三个唯一索引不含 {@code deleted} 列，
+     * 若只置 {@code deleted = 1}，同名的学号/工号将永久无法再次开通。
+     * 因此在删除时追加 {@code #D<id>} 后缀（保留原值可读性，仍可追溯是谁），
+     * 使唯一键让位给后续新建的同名账号。</p>
+     *
+     * <p>同时置 {@code status = 0}，避免被历史统计当作启用账号。</p>
+     *
+     * @return 影响行数（0 表示用户不存在或已删除）
+     */
+    @Update("""
+            UPDATE sys_user
+            SET deleted    = 1,
+                status     = 0,
+                username   = CONCAT(LEFT(username, 40), '#D', id),
+                student_no = IF(student_no IS NULL, NULL, CONCAT(LEFT(student_no, 20), '#D', id)),
+                staff_no   = IF(staff_no IS NULL, NULL, CONCAT(LEFT(staff_no, 20), '#D', id)),
+                updated_at = NOW()
+            WHERE id = #{id} AND deleted = 0
+            """)
+    int logicalDeleteById(@Param("id") Long id);
 }

@@ -134,4 +134,21 @@ public class UserController {
                                         @RequestBody UserDtos.CreditAdjustRequest req) {
         return Result.ok(userService.adjustCredit(id, req.delta(), req.reason(), null, CurrentUserHolder.id()));
     }
+
+    @Operation(summary = "删除成员（逻辑删除）")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('user:delete')")
+    @OperLog(module = "用户管理", action = "删除成员")
+    public Result<Void> delete(@PathVariable Long id) {
+        userService.delete(id);
+        return Result.ok();
+    }
+
+    @Operation(summary = "批量删除成员（逐条校验，返回失败明细）")
+    @PostMapping("/batch-delete")
+    @PreAuthorize("hasAuthority('user:delete')")
+    @OperLog(module = "用户管理", action = "批量删除成员")
+    public Result<UserDtos.DeleteResult> batchDelete(@Valid @RequestBody UserDtos.DeleteBatchRequest req) {
+        return Result.ok(userService.deleteBatch(req.getIds()));
+    }
 }

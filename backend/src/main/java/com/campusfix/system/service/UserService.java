@@ -9,6 +9,7 @@ import com.campusfix.common.result.PageResult;
 import com.campusfix.common.result.ResultCode;
 import com.campusfix.common.security.CurrentUserHolder;
 import com.campusfix.common.security.JwtTokenProvider;
+import com.campusfix.order.mapper.RepairOrderMapper;
 import com.campusfix.system.dto.UserDtos;
 import com.campusfix.system.entity.SysCreditLog;
 import com.campusfix.system.entity.SysDept;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,6 +55,7 @@ public class UserService {
     private final SysRoleMapper roleMapper;
     private final SysDeptMapper deptMapper;
     private final SysCreditLogMapper creditLogMapper;
+    private final RepairOrderMapper repairOrderMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
@@ -378,6 +381,85 @@ public class UserService {
         if (status != null && status == 0) {
             tokenProvider.logoutAll(id);
         }
+    }
+
+    /**
+     * 删除成员（逻辑删除）。
+     *
+     * <p>采用逻辑删除而非物理删除：工单、投诉、评价、操作日志均以 user_id 关联，
+     * 物理删除会让历史记录失去主体。删除时同时为 username / student_no / staff_no
+     * 追加 {@code #D<id>} 墓碑后缀，让唯一索引让位，后续可重新开通同学号 / 工号。</p>
+     *
+     * <p>以下三种情况拒绝删除：</p>
+     * <ol>
+     *   <li>删除当前登录账号（避免把自己锁在系统外）；</li>
+     *   <li>删除「最后一个启用的系统管理员」（系统将无人可管理）；</li>
+     *   <li>作为报修人或维修人仍有未完结工单（工单会失去责任人）。</li>
+     * </ol>
+     */
+    public void delete(Long id) {
+        deleteOne(id);
+    }
+
+    /**
+     * 批量删除：逐个校验、逐个删除，<b>不做全有或全无</b>。
+     *
+     * <p>能删的删掉，不能删的连同原因一起返回，便于前端展示
+     * 「哪些没删掉、为什么」，避免一条不合规导致整批失败。</p>
+     */
+    public UserDtos.DeleteResult deleteBatch(List<Long> ids) {
+        List<Long> targets = ids == null ? List.of()
+                : ids.stream().filter(Objects::nonNull).distinct().toList();
+        int success = 0;
+        List<UserDtos.DeleteFailure> failed = new ArrayList<>();
+        for (Long id : targets) {
+            try {
+                deleteOne(id);
+                success++;
+            } catch (BizException e) {
+                failed.add(new UserDtos.DeleteFailure(id, displayName(id), e.getMessage()));
+            }
+        }
+        log.info("批量删除成员 operator={} 提交={} 成功={} 跳过={}",
+                CurrentUserHolder.id(), targets.size(), success, failed.size());
+        return new UserDtos.DeleteResult(success, failed);
+    }
+
+    /** 单条删除：校验 → 逻辑删除 → 注销令牌。 */
+    private void deleteOne(Long id) {
+        SysUser user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "成员不存在或已被删除");
+        }
+        if (id.equals(CurrentUserHolder.id())) {
+            throw new BizException(ResultCode.STATUS_NOT_ALLOWED, "不能删除当前登录账号");
+        }
+        boolean activeAdmin = Integer.valueOf(1).equals(user.getStatus())
+                && roleCodesOf(id).contains(RoleCode.ADMIN);
+        if (activeAdmin && activeAdminCountExcluding(id) == 0) {
+            throw new BizException(ResultCode.STATUS_NOT_ALLOWED, "系统至少保留一名启用的系统管理员");
+        }
+        int activeOrders = repairOrderMapper.countActiveByUser(id);
+        if (activeOrders > 0) {
+            throw new BizException(ResultCode.STATUS_NOT_ALLOWED,
+                    "仍有 " + activeOrders + " 张未完结工单，请先转派或办结");
+        }
+        if (userMapper.logicalDeleteById(id) == 0) {
+            throw new BizException(ResultCode.NOT_FOUND, "成员不存在或已被删除");
+        }
+        tokenProvider.logoutAll(id);
+        log.info("删除成员 id={} username={} operator={}", id, user.getUsername(), CurrentUserHolder.id());
+    }
+
+    /** 失败明细展示用：姓名（账号）；记录已不可读时退化为 id。 */
+    private String displayName(Long id) {
+        SysUser u = userMapper.selectById(id);
+        if (u == null) {
+            return "#" + id;
+        }
+        return StringUtils.hasText(u.getRealName())
+                ? u.getRealName() + "（" + u.getUsername() + "）"
+                : u.getUsername();
     }
 
     public String resetPassword(Long id) {

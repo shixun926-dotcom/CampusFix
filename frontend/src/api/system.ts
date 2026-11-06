@@ -50,6 +50,29 @@ export interface UserBasicUpdatePayload {
 export const updateUserBasic = (id: number | string, data: UserBasicUpdatePayload) =>
   request.put(`/users/${id}/basic`, data) as unknown as Promise<UserVO>
 
+/* ---------------- 删除 / 批量删除 ---------------- */
+
+/** 批量删除失败明细：某个成员为什么没删掉 */
+export interface DeleteFailure {
+  id: number
+  name: string
+  reason: string
+}
+
+/** 批量删除结果：成功条数 + 跳过明细（后端逐条校验，不做全有或全无） */
+export interface DeleteResult {
+  success: number
+  failed: DeleteFailure[]
+}
+
+/** 删除单个成员（逻辑删除，历史工单与日志保留） */
+export const deleteUser = (id: number | string) =>
+  request.delete(`/users/${id}`) as unknown as Promise<void>
+
+/** 批量删除成员，单次上限 200 */
+export const deleteUsersBatch = (ids: (number | string)[]) =>
+  request.post('/users/batch-delete', { ids }) as unknown as Promise<DeleteResult>
+
 /* ---------------- 学生导入 ---------------- */
 
 export const createStudent = (data: {

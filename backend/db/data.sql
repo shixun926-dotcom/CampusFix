@@ -73,6 +73,7 @@ INSERT INTO sys_permission (id, parent_id, code, name, type, path, sort) VALUES
 (51,  0, 'user:add',         '新增用户',     'BUTTON', NULL,                   51),
 (52,  0, 'user:edit',        '编辑用户',     'BUTTON', NULL,                   52),
 (53,  0, 'user:import',      '批量导入',     'BUTTON', NULL,                   53),
+(63,  0, 'user:delete',      '删除用户',     'BUTTON', NULL,                   53),
 (54,  0, 'role:list',        '角色管理',     'API',    '/roles',               54),
 (55,  0, 'role:edit',        '编辑角色',     'BUTTON', NULL,                   55),
 (56,  0, 'role:auth',        '分配权限',     'BUTTON', NULL,                   56),

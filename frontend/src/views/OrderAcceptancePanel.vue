@@ -216,7 +216,7 @@ watch(() => props.orderId, load)
   margin-left: 8px;
   font-size: 12px;
   font-weight: 400;
-  color: var(--brand);
+  color: var(--slate-600);
 }
 .deadline {
   display: flex;
@@ -288,8 +288,9 @@ textarea.field {
   line-height: 1.6;
 }
 .lbl em {
-  color: var(--brand);
+  color: var(--slate-600);
   font-style: normal;
+  font-weight: 700;
 }
 .ext-form-act {
   display: flex;

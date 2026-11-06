@@ -521,6 +521,8 @@ HTTP 状态码：业务错误统一 200 + `code`；并发冲突 409；未认证 
 | PUT | `/users/{id}/basic` | **编辑基本信息**（部分更新，动态 SQL：null=不改、空串=清除、deptId=0 清除部门） | `user:edit` |
 | PUT | `/users/{id}/status` | 启用/禁用 | `user:edit` |
 | PUT | `/users/{id}/reset-password` | 重置密码 | `user:edit` |
+| DELETE | `/users/{id}` | **删除成员**（逻辑删除；拒绝删自己 / 最后一个启用管理员 / 仍有未完结工单者） | `user:delete` |
+| POST | `/users/batch-delete` | **批量删除成员**（逐条校验，返回成功数与跳过明细，不做全有或全无） | `user:delete` |
 | POST | `/users/students` | 手动添加单个学生（姓名/学号/班级/手机号） | `user:add` |
 | GET | `/users/import/template` | 下载学生导入模板（xlsx） | `user:import` |
 | POST | `/users/import` | Excel 批量导入，返回总数/成功/失败与明细 | `user:import` |
@@ -1609,6 +1611,7 @@ WantedBy=multi-user.target
 | 2026-10-31 | v2.5 | 操作日志查询与维修工日历落地：新增 `GET /oper-logs`（分页，账号/模块/成败/日期筛选）与 `GET /oper-logs/modules`（`log:list` 权限，沿用 data.sql 预置权限码，无表结构变更）；新增 `GET /repairers/{id}/calendar`（未来 N 天已确认上门时段 + 在办数，管理端或本人可查）；前端新增侧栏「操作日志」页（筛选 + 表格 + 参数详情弹窗）、路由 `/oper-logs`；指派面板选中维修工后展示其忙闲日历辅助指派决策。均为只读新增，不影响既有接口契约 |
 | 2026-10-31 | v2.6 | 独立统计页与消息中心落地：新增 `GET /stats/insight`（维修工绩效排行=完成数/加权均分/好评率/平均处理时长、近 6 个月新增与完成趋势、投诉四态汇总与投诉率；后勤按部门及下级过滤维修工与工单，管理员全局）；前端新增「数据统计」页（侧栏洞察组，替换 Soon 占位）与「消息中心」页（全量通知筛选分页，顶栏通知铃加查看全部入口）；维修工判定与指派候选同口径（sys_user_role 关联，修复按工号误判把管理员计入排行的问题）。均为只读新增，无表结构变更，接口契约零破坏 |
 | 2026-10-31 | v2.7 | 客户端工作台按角色分流：`STUDENT` / `REPAIRER` 不再复用管理端工作台，分别渲染 `StudentHome` / `RepairerHome`，`MANAGER` / `ADMIN` 保持原工作台；学生端收敛为「提交报修」主操作 + 焦点工单 + 四状态数字卡 + 最近报修 / 报修流程，维修端为「我的任务 / 抢单池」主操作 + 今日完成 + 四状态数字卡 + 任务列表 / 抢单池预览；移除客户端装饰插画、图表与管理端入口，侧栏仅保留首页 / 我的报修（我的任务）/ 消息中心；工单列表新增 `?tab=pool` 深链接并按角色改写页头与搜索占位。复用既有统计与工单接口，后端与数据契约零变更 |
+| 2026-11-06 | v2.8 | 成员删除与批量删除：新增权限点 `user:delete(63)`、接口 `DELETE /users/{id}` 与 `POST /users/batch-delete`；采用**逻辑删除**并为 `username/student_no/staff_no` 追加 `#D<id>` 墓碑后缀以释放唯一索引；护栏为「不能删自己 / 不能删最后一个启用管理员 / 有未完结工单不可删」；批量删除逐条校验、返回成功数与跳过明细；旧库需执行 `db/migration/V6__user_delete_permission.sql`。数据表结构零变更，详见 [`CampusFix-成员删除功能说明.md`](./CampusFix-成员删除功能说明.md) |
 
 ---
 

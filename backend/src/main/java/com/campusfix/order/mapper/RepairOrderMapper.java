@@ -65,4 +65,19 @@ public interface RepairOrderMapper extends BaseMapper<RepairOrder> {
             """)
     List<RepairOrder> selectStallCandidates(@Param("activeStatuses") List<String> activeStatuses,
                                             @Param("stallBefore") LocalDateTime stallBefore);
+
+    /**
+     * 用户名下未完结工单数：既是报修人、也是维修人。
+     *
+     * <p>用于删除成员前的前置校验——未完结工单仍需该用户参与流转，
+     * 直接删除会让工单失去责任人或报修人，因此必须先转派或办结。</p>
+     */
+    @Select("""
+            SELECT COUNT(*)
+            FROM repair_order
+            WHERE deleted = 0
+              AND status NOT IN ('COMPLETED', 'REJECTED', 'CANCELLED')
+              AND (reporter_id = #{userId} OR assignee_id = #{userId})
+            """)
+    int countActiveByUser(@Param("userId") Long userId);
 }

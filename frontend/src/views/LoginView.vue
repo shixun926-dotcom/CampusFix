@@ -1,5 +1,10 @@
 <template>
   <div class="login">
+    <!-- 全局封面：项目内静态资源（构建时由 Vite 处理为带哈希的产物 URL），铺满整页 -->
+    <div class="login-cover" :style="{ backgroundImage: `url(${loginCover})` }" aria-hidden="true" />
+    <div class="login-veil veil-left" aria-hidden="true" />
+    <div class="login-veil veil-right" aria-hidden="true" />
+
     <section class="login-brand">
       <div class="logo">
         <span class="mark">CF</span>
@@ -89,6 +94,8 @@ import { useRoute, useRouter } from 'vue-router'
 import Icon from '../ui/Icon.vue'
 import { toastOk } from '../ui/toast'
 import { useAuthStore } from '../stores/auth'
+// 封面图作为项目内静态资源引入：由 Vite 打包为带哈希的产物，随应用一起分发
+import loginCover from '../assets/login-cover.jpg'
 
 const router = useRouter()
 const route = useRoute()

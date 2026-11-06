@@ -69,7 +69,7 @@
       <span class="strip-label"><Icon name="filter" :size="13" />本页状态</span>
       <button class="strip-chip" :class="{ on: !query.status }" @click="filterStatus('')">
         <span class="dot" style="background: #9aa3b2" />全部
-        <b>{{ rows.length }}</b>
+        <b>{{ statusSnapshot.total || rows.length }}</b>
       </button>
       <button
         v-for="c in statusChips"
@@ -304,27 +304,41 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   CANCELLED: { label: '已取消', color: '#9aa3b2' }
 }
 
-const statusChips = computed(() => {
+/**
+ * 本页状态条：计数与选项列表取自「未按状态筛选」的那次加载，
+ * 避免筛选后接口只返回单一状态导致其余选项消失（无法再切换）。
+ */
+const statusSnapshot = ref<{ total: number; chips: { status: string; label: string; color: string; count: number }[] }>({
+  total: 0,
+  chips: []
+})
+
+function buildStatusChips(list: any[]) {
   const counts = new Map<string, number>()
-  rows.value.forEach((r) => counts.set(r.status, (counts.get(r.status) || 0) + 1))
+  list.forEach((r) => counts.set(r.status, (counts.get(r.status) || 0) + 1))
   return Object.entries(STATUS_META)
     .filter(([key]) => counts.get(key))
     .map(([status, meta]) => ({ status, label: meta.label, color: meta.color, count: counts.get(status) || 0 }))
-})
+}
 
-/* 分类卡片：图标与配色按故障类型编码映射 */
+const statusChips = computed(() => statusSnapshot.value.chips)
+
+/* 分类卡片：图标按故障类型映射；配色统一为石板灰色系
+ * （沿用「公共设施」「其他」的色系，移除蓝/紫/青/橙等其它色相） */
 type CategoryMeta = { icon: string; color: string }
 
+const CATEGORY_ACCENT = '#64748b'
+
 const CATEGORY_META: Record<string, CategoryMeta> = {
-  PLUMBING: { icon: 'droplet', color: '#4f6ef7' },
-  NETWORK: { icon: 'wifi', color: '#7c5cfc' },
-  AIRCON: { icon: 'snowflake', color: '#0ea5a4' },
-  DOOR: { icon: 'door', color: '#f59e0b' },
-  LIGHT: { icon: 'lightbulb', color: '#ff7a59' },
-  FURNITURE: { icon: 'sofa', color: '#b45309' },
-  PUBLIC: { icon: 'building', color: '#64748b' },
-  SANITARY: { icon: 'sparkles', color: '#0891b2' },
-  OTHER: { icon: 'file', color: '#8a90a0' }
+  PLUMBING: { icon: 'droplet', color: CATEGORY_ACCENT },
+  NETWORK: { icon: 'wifi', color: CATEGORY_ACCENT },
+  AIRCON: { icon: 'snowflake', color: CATEGORY_ACCENT },
+  DOOR: { icon: 'door', color: CATEGORY_ACCENT },
+  LIGHT: { icon: 'lightbulb', color: CATEGORY_ACCENT },
+  FURNITURE: { icon: 'sofa', color: CATEGORY_ACCENT },
+  PUBLIC: { icon: 'building', color: CATEGORY_ACCENT },
+  SANITARY: { icon: 'sparkles', color: CATEGORY_ACCENT },
+  OTHER: { icon: 'file', color: CATEGORY_ACCENT }
 }
 
 const NAME_CODE: [string, string][] = [
@@ -339,7 +353,7 @@ const NAME_CODE: [string, string][] = [
   ['其他', 'OTHER']
 ]
 
-const FALLBACK_META: CategoryMeta = { icon: 'wrench', color: '#8a90a0' }
+const FALLBACK_META: CategoryMeta = { icon: 'wrench', color: CATEGORY_ACCENT }
 
 function metaByName(name?: string): CategoryMeta {
   if (!name) return FALLBACK_META
@@ -375,11 +389,34 @@ async function load() {
     const data: any = tab.value === 'pool' ? await pagePool(params) : await pageOrders(params)
     rows.value = data.list || []
     total.value = data.total || 0
+    // 仅在没有状态筛选时刷新快照，保证筛选期间选项列表稳定
+    if (!query.status) {
+      statusSnapshot.value = { total: rows.value.length, chips: buildStatusChips(rows.value) }
+    } else if (!statusSnapshot.value.chips.length) {
+      seedStatusSnapshot()
+    }
   } catch {
     rows.value = []
     total.value = 0
   } finally {
     loading.value = false
+  }
+}
+
+/** 带状态参数直达本页时，补一次无状态查询以恢复状态选项 */
+async function seedStatusSnapshot() {
+  try {
+    const params = {
+      page: 1,
+      size: query.size,
+      keyword: query.keyword || undefined,
+      categoryId: query.categoryId || undefined
+    }
+    const data: any = tab.value === 'pool' ? await pagePool(params) : await pageOrders(params)
+    const list = data.list || []
+    statusSnapshot.value = { total: list.length, chips: buildStatusChips(list) }
+  } catch {
+    // 快照失败不影响主流程
   }
 }
 
@@ -568,8 +605,8 @@ onMounted(() => {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: var(--brand-l);
-  color: var(--brand);
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
   flex: none;
 }
 .cat-hd-txt h3 {
@@ -593,8 +630,8 @@ onMounted(() => {
 .cat-selected {
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--brand);
-  background: var(--brand-l);
+  color: #475569;
+  background: rgba(100, 116, 139, 0.1);
   border-radius: 7px;
   padding: 4px 9px;
   white-space: nowrap;
@@ -613,9 +650,9 @@ onMounted(() => {
   transition: 0.15s;
 }
 .clear-cat:hover {
-  border-color: var(--brand);
-  color: var(--brand);
-  background: var(--brand-l2);
+  border-color: #94a3b8;
+  color: #475569;
+  background: rgba(100, 116, 139, 0.06);
 }
 
 .cat-grid {
@@ -637,15 +674,15 @@ onMounted(() => {
   transition: border-color 0.16s, background 0.16s, transform 0.14s, box-shadow 0.16s;
 }
 .cat-tile:hover {
-  border-color: #f3c2c6;
-  background: #fffafb;
+  border-color: #cfd6e2;
+  background: #fbfcfe;
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(20, 24, 40, 0.06);
 }
 .cat-tile.on {
-  border-color: var(--brand);
-  background: linear-gradient(150deg, #fff7f8, #fff 70%);
-  box-shadow: 0 4px 14px rgba(230, 57, 70, 0.12);
+  border-color: #64748b;
+  background: linear-gradient(150deg, rgba(100, 116, 139, 0.08), #fff 70%);
+  box-shadow: 0 4px 14px rgba(100, 116, 139, 0.16);
 }
 .cat-ic {
   width: 38px;
@@ -660,8 +697,8 @@ onMounted(() => {
   transform: scale(1.05);
 }
 .cat-ic.all {
-  background: var(--brand-l);
-  color: var(--brand);
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
 }
 .cat-main {
   display: flex;
@@ -679,7 +716,8 @@ onMounted(() => {
   transition: color 0.15s;
 }
 .cat-tile.on .cat-name {
-  color: var(--brand);
+  color: #0f172a;
+  font-weight: 700;
 }
 .cat-meta {
   font-size: 11.5px;
@@ -691,7 +729,7 @@ onMounted(() => {
   color: var(--ink-2);
 }
 .cat-tile.on .cat-meta b {
-  color: var(--brand);
+  color: #334155;
 }
 .cat-go {
   margin-left: auto;
@@ -707,7 +745,7 @@ onMounted(() => {
 .cat-tile.on .cat-go {
   opacity: 1;
   transform: none;
-  color: var(--brand);
+  color: #64748b;
 }
 
 /* 状态概览条 */
@@ -766,9 +804,9 @@ onMounted(() => {
 }
 .strip-chip.on {
   background: #fff;
-  border-color: var(--brand);
-  color: var(--brand);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.12);
+  border-color: var(--slate-500);
+  color: var(--slate-700);
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.14);
 }
 .strip-chip.on b {
   background: var(--brand-l);

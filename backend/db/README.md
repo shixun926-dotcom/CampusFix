@@ -13,6 +13,7 @@
 | `demo/demo_seed.sql`                    | 四个角色工作区的演示账号与演示数据               | 4 个账号、20 张工单（覆盖 10 种状态）及预约/记录/评价/投诉/聊天/通知等 | ✅ 可（仅清理 9001–9099 演示段）           | 低：不影响基础数据与真实业务数据，但演示服务重启会重置演示态      |
 | `demo/demo_cleanup.sql`                 | 移除全部演示数据与演示账号                     | 按演示 ID 段删除                                  | ✅ 可                              | 中：仅删除 `demo_*` 账号与其业务数据                  |
 | `migration/V2__student_class.sql`       | 历史增量：`sys_user` 增加 `class_name` 列 | 1 条 `ALTER TABLE` + 1 条回填 `UPDATE`         | ❌ 否，重复执行报 `ERROR 1060`           | 中：仅改表结构                                 |
+| `migration/V6__user_delete_permission.sql` | 历史增量：新增 `user:delete` 权限点并授予系统管理员 | 1 条 `sys_permission` + 1 条 `sys_role_permission` | ❌ 否，重复执行主键冲突 | 低：仅新增权限，不改表结构 |
 | `../db/` 之外：`deploy/docker-compose.yml` | 容器化首次启动自动导入                       | 挂载 `schema.sql` → `01-`、`data.sql` → `02-` | 仅首次                              | 同 schema + data                         |
 
 > **结论**：日常开发只需 `schema.sql` + `data.sql` 两个文件、两条命令即可从零建库。
@@ -28,6 +29,8 @@ schema.sql（建库 campusfix + 25 张表）
 ```
 
 **关于 `V2__student_class.sql`**：当前 `schema.sql` 的 `sys_user` 已内置 `class_name` 列（第 19–20 行），因此**全新库不要再执行 V2**，否则会因重复列直接中断。该脚本仅用于修复「在 V2 之前建库」的旧环境。
+
+**关于 `V6__user_delete_permission.sql`**：当前 `data.sql` 已内置 `user:delete` 权限，全新库无需执行；仅「V6 之前建库」的旧环境需要补一次，否则用户管理页的删除 / 批量删除按钮不会出现（接口返回 `2001 无操作权限`）。
 
 ---
 

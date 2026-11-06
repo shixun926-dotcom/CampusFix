@@ -298,11 +298,9 @@ function go(page: number) {
   load()
 }
 
-function statusTagClass(status: string) {
-  if (status === 'RESOLVED') return 'tag-crit'
-  if (status === 'REJECTED') return 'tag-ink'
-  if (status === 'PROCESSING') return 'tag-brand'
-  return 'tag-warn'
+/** 投诉状态标签统一为石板灰，与工单状态标签保持同一色系 */
+function statusTagClass(_status: string) {
+  return 'tag-slate'
 }
 
 function isClosed(status: string) {

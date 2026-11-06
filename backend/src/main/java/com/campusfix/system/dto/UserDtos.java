@@ -1,9 +1,12 @@
 package com.campusfix.system.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -189,5 +192,44 @@ public final class UserDtos {
     }
 
     public record CreditAdjustRequest(Integer delta, String reason) {
+
+    }
+
+    /* ------------------------------ 删除 / 批量删除 ------------------------------ */
+
+    /**
+     * 批量删除请求。
+     *
+     * <p>服务端对每个 id 独立校验（不能删自己、不能删最后一个启用管理员、
+     * 不能删仍有未完结工单的人），因此本接口**不做全有或全无**：
+     * 能删的删掉，不能删的在 {@link DeleteResult#getFailed()} 中逐条返回原因。</p>
+     */
+    @Data
+    public static class DeleteBatchRequest {
+
+        @NotEmpty(message = "请选择要删除的成员")
+        @Size(max = 200, message = "单次最多删除 200 名成员")
+        private List<Long> ids;
+    }
+
+    /** 单条删除失败明细。 */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeleteFailure {
+        private Long id;
+        /** 姓名（账号），便于前端直接展示 */
+        private String name;
+        /** 跳过原因 */
+        private String reason;
+    }
+
+    /** 批量删除结果：成功条数 + 跳过明细。 */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeleteResult {
+        private int success;
+        private List<DeleteFailure> failed;
     }
 }

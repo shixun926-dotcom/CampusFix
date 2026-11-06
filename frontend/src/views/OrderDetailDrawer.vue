@@ -8,9 +8,9 @@
             <span class="mono">{{ order.orderNo }}</span>
             <span class="dot-sep">·</span>
             <OrderStatusTag :status="order.status" :label="order.statusLabel" />
-            <span v-if="order.isWarranty" class="tag tag-ok" style="margin-left: 6px">质保返修</span>
-            <span v-if="order.autoAssigned" class="tag tag-warn" style="margin-left: 6px">系统派单</span>
-            <span v-if="order.autoConfirmed" class="tag tag-ink" style="margin-left: 6px">系统验收</span>
+            <span v-if="order.isWarranty" class="tag tag-slate" style="margin-left: 6px">质保返修</span>
+            <span v-if="order.autoAssigned" class="tag tag-slate" style="margin-left: 6px">系统派单</span>
+            <span v-if="order.autoConfirmed" class="tag tag-slate" style="margin-left: 6px">系统验收</span>
           </div>
         </div>
         <button class="close" @click="close">✕</button>
@@ -104,7 +104,7 @@
             <div v-for="l in logs" :key="l.id" class="tl-item done">
               <div class="tl-t">
                 {{ l.action }}
-                <span class="tag tag-ink" style="margin-left: 6px">{{ l.toLabel }}</span>
+                <span class="tag tag-slate" style="margin-left: 6px">{{ l.toLabel }}</span>
               </div>
               <div class="tl-d">
                 {{ l.operatorName }} · {{ roleLabel(l.operatorRole) }} · {{ l.createdAt }}
@@ -506,9 +506,9 @@ async function run(fn: () => Promise<any>, successMsg: string) {
   padding: 16px 18px;
   border-radius: 14px;
   background:
-    radial-gradient(280px 120px at 100% 0%, rgba(230, 57, 70, 0.1), transparent 70%),
-    linear-gradient(135deg, #fdf1f2, #f8f9fc 70%);
-  border: 1px solid #f7dfe1;
+    radial-gradient(280px 120px at 100% 0%, rgba(100, 116, 139, 0.14), transparent 70%),
+    linear-gradient(135deg, #f1f5f9, #f8fafc 70%);
+  border: 1px solid var(--slate-200);
   margin-bottom: 18px;
 }
 .sh-left {
@@ -522,13 +522,13 @@ async function run(fn: () => Promise<any>, successMsg: string) {
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: linear-gradient(140deg, #f0505c, #e63946);
+  background: linear-gradient(140deg, var(--slate-600), var(--slate-800));
   color: #fff;
-  box-shadow: 0 6px 14px rgba(230, 57, 70, 0.28);
+  box-shadow: 0 6px 14px rgba(2, 6, 23, 0.24);
 }
 .sh-label {
   font-size: 11px;
-  color: var(--ink-3);
+  color: var(--slate-500);
   letter-spacing: 0.3px;
 }
 .sh-value {
@@ -550,7 +550,7 @@ async function run(fn: () => Promise<any>, successMsg: string) {
 }
 .sh-stats span {
   font-size: 10.5px;
-  color: var(--ink-3);
+  color: var(--slate-500);
 }
 .sh-stats b {
   font-size: 14px;
@@ -605,7 +605,7 @@ async function run(fn: () => Promise<any>, successMsg: string) {
   inset: 0;
   display: grid;
   place-items: center;
-  background: linear-gradient(140deg, #f0505c, var(--brand) 55%, #c42532);
+  background: linear-gradient(140deg, var(--slate-600), var(--slate-800));
   color: #fff;
   font-size: 15px;
   font-weight: 700;
@@ -637,7 +637,7 @@ async function run(fn: () => Promise<any>, successMsg: string) {
   font-weight: 600;
   margin-bottom: 10px;
   padding-left: 9px;
-  border-left: 3px solid var(--brand);
+  border-left: 3px solid var(--slate-500);
   line-height: 1.2;
 }
 .desc {
@@ -688,7 +688,7 @@ async function run(fn: () => Promise<any>, successMsg: string) {
   margin-bottom: 9px;
 }
 .cal-hd b {
-  color: var(--brand);
+  color: var(--slate-700);
 }
 .cal-days {
   display: flex;
@@ -712,8 +712,8 @@ async function run(fn: () => Promise<any>, successMsg: string) {
 }
 .d-slot {
   font-size: 11px;
-  color: var(--accent);
-  background: #eef2ff;
+  color: var(--slate-700);
+  background: var(--slate-100);
   border-radius: 6px;
   padding: 2px 7px;
 }

@@ -372,7 +372,7 @@ watch(() => props.orderId, load)
   margin-left: 8px;
   font-size: 12px;
   font-weight: 400;
-  color: var(--brand);
+  color: var(--slate-600);
 }
 .stamps {
   display: grid;
@@ -475,8 +475,9 @@ watch(() => props.orderId, load)
   margin-top: 0;
 }
 .lbl em {
-  color: var(--brand);
+  color: var(--slate-600);
   font-style: normal;
+  font-weight: 700;
 }
 textarea.field {
   resize: vertical;
@@ -535,9 +536,9 @@ textarea.field {
   cursor: pointer;
 }
 .pic-add:hover {
-  border-color: var(--brand);
-  color: var(--brand);
-  background: var(--brand-l2);
+  border-color: var(--slate-500);
+  color: var(--slate-700);
+  background: var(--slate-50);
 }
 .hint-line {
   font-size: 11.5px;

@@ -47,19 +47,19 @@
         <svg class="art-svg" viewBox="0 0 380 240" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="cf-warm" x1="60" y1="60" x2="330" y2="220" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#ff9a7a" />
-              <stop offset="1" stop-color="#e63946" />
+              <stop stop-color="#cbd5e1" />
+              <stop offset="1" stop-color="#64748b" />
             </linearGradient>
             <linearGradient id="cf-cool" x1="80" y1="40" x2="300" y2="220" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#7d95ff" />
-              <stop offset="1" stop-color="#4f6ef7" stop-opacity=".2" />
+              <stop stop-color="#e2e8f0" />
+              <stop offset="1" stop-color="#475569" stop-opacity=".2" />
             </linearGradient>
           </defs>
 
           <circle cx="196" cy="118" r="108" fill="url(#cf-warm)" opacity=".16" />
           <circle cx="300" cy="62" r="42" stroke="#fff" stroke-opacity=".18" stroke-dasharray="3 7" />
-          <circle cx="86" cy="176" r="4" fill="#ffb39c" opacity=".8" />
-          <circle cx="316" cy="168" r="3" fill="#8fa4ff" opacity=".9" />
+          <circle cx="86" cy="176" r="4" fill="#cbd5e1" opacity=".8" />
+          <circle cx="316" cy="168" r="3" fill="#e2e8f0" opacity=".9" />
 
           <!-- 校园建筑线稿 -->
           <path d="M52 202h276" stroke="#fff" stroke-opacity=".26" stroke-linecap="round" />
@@ -83,7 +83,7 @@
           <!-- 维修徽章 -->
           <circle cx="280" cy="74" r="28" fill="url(#cf-warm)" />
           <path d="M272.5 78.5l-4.5 4.5m4.5-4.5 2.2 2.2m-2.2-2.2 6.3-6.3a6 6 0 0 1 7.6-7.6l-3.6 3.6 1.8 1.8 3.6-3.6a6 6 0 0 1-7.6 7.6l-6.3 6.3" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
-          <circle cx="122" cy="132" r="14" fill="#12a150" />
+          <circle cx="122" cy="132" r="14" fill="#475569" stroke="#94a3b8" stroke-opacity=".5" />
           <path d="M116.5 132.4l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
 
           <!-- 连接弧线 -->
@@ -574,22 +574,17 @@ const donutBg = computed(() => {
 
 /* ------------------------------ 排行（类型 / 楼栋） ------------------------------ */
 
-const RANK_COLORS = [
-  { color: '#e63946', soft: '#fdecee' },
-  { color: '#4f6ef7', soft: '#eef2ff' },
-  { color: '#f59e0b', soft: '#fef4e2' },
-  { color: '#12a150', soft: '#e8f8ee' },
-  { color: '#7c5cfc', soft: '#f1edff' }
-]
+/* 排行条为纯装饰性配色（非状态语义），统一走石板灰系，靠名次与长度区分 */
+const RANK_TONE = { color: 'var(--slate-500)', soft: 'var(--slate-100)' }
 
 const toRank = (items: { name: string; count: number }[]) => {
   const max = Math.max(1, ...items.map((i) => i.count))
-  return items.map((it, i) => ({
+  return items.map((it) => ({
     name: it.name,
     count: it.count,
     pct: Math.max(6, Math.round((it.count / max) * 100)),
-    color: RANK_COLORS[i % RANK_COLORS.length].color,
-    soft: RANK_COLORS[i % RANK_COLORS.length].soft
+    color: RANK_TONE.color,
+    soft: RANK_TONE.soft
   }))
 }
 
@@ -646,11 +641,11 @@ function onCreated() {
   padding: 30px 34px;
   color: #fff;
   background:
-    radial-gradient(760px 420px at 92% -30%, rgba(230, 57, 70, .58), transparent 62%),
-    radial-gradient(520px 360px at 4% 130%, rgba(79, 110, 247, .3), transparent 62%),
-    linear-gradient(125deg, #1b1f29 0%, #232936 48%, #171b24 100%);
-  border: 1px solid rgba(255, 255, 255, .07);
-  box-shadow: 0 26px 60px rgba(23, 26, 33, .22);
+    radial-gradient(760px 420px at 92% -30%, rgba(100, 116, 139, 0.5), transparent 62%),
+    radial-gradient(520px 360px at 4% 130%, rgba(71, 85, 105, 0.42), transparent 62%),
+    linear-gradient(125deg, #0f172a 0%, #1e293b 48%, #0b1220 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.26);
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.72fr);
   gap: 18px;
@@ -686,13 +681,13 @@ function onCreated() {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #37d67a;
-  box-shadow: 0 0 0 3px rgba(55, 214, 122, .18);
+  background: var(--slate-400);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.22);
   animation: pulse 2.2s ease-in-out infinite;
 }
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(55, 214, 122, .18); }
-  50% { box-shadow: 0 0 0 7px rgba(55, 214, 122, .02); }
+  0%, 100% { box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.22); }
+  50% { box-shadow: 0 0 0 7px rgba(148, 163, 184, 0.02); }
 }
 .hero-title {
   font-size: 31px;
@@ -708,7 +703,7 @@ function onCreated() {
   font-weight: 700;
   letter-spacing: -0.4px;
   margin-top: 4px;
-  background: linear-gradient(100deg, #ffb199, #ff7a7a 55%, #ff9a8a);
+  background: linear-gradient(100deg, #f8fafc, #cbd5e1 55%, #94a3b8);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -716,7 +711,7 @@ function onCreated() {
 .hero-sub {
   margin-top: 12px;
   max-width: 520px;
-  color: #aeb5c3;
+  color: var(--slate-400);
   font-size: 13.5px;
   line-height: 1.8;
 }
@@ -731,16 +726,17 @@ function onCreated() {
   height: 40px;
   padding: 0 20px;
   border-radius: 11px;
-  background: linear-gradient(135deg, #ff7a5c, #e63946);
-  color: #fff;
+  background: var(--slate-50);
+  color: var(--slate-900);
   border: none;
-  box-shadow: 0 10px 24px rgba(230, 57, 70, .36);
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.34);
 }
 .hero-btn:hover {
-  background: linear-gradient(135deg, #ff8a6a, #f04a57);
-  color: #fff;
+  background: #fff;
+  color: var(--slate-900);
   border: none;
-  box-shadow: 0 14px 30px rgba(230, 57, 70, .44);
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.44);
 }
 .hero-btn-ghost {
   height: 40px;
@@ -829,8 +825,8 @@ function onCreated() {
   place-items: center;
   flex: none;
 }
-.fc-ic.ok { background: rgba(18, 161, 80, .22); color: #4ade80; }
-.fc-ic.warn { background: rgba(245, 158, 11, .2); color: #fbbf24; }
+.fc-ic.ok { background: rgba(255, 255, 255, 0.15); color: var(--slate-200); }
+.fc-ic.warn { background: rgba(255, 255, 255, 0.1); color: var(--slate-300); }
 @keyframes floatUp {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-7px); }
@@ -878,21 +874,21 @@ function onCreated() {
   height: 32px;
   padding: 0 14px;
   border-radius: 9px;
-  border: 1px solid #f6c9cd;
+  border: 1px solid #f0d5ac;
   background: #fff;
-  color: var(--brand);
+  color: #a2630a;
   font-size: 12.5px;
   cursor: pointer;
 }
 .ab-btn:hover {
-  background: var(--brand-l);
+  background: #fef4e2;
 }
 
 .stat-card.clickable {
   cursor: pointer;
 }
 .stat-card.clickable:hover {
-  border-color: #f0c9cd;
+  border-color: #cfd6e2;
 }
 .stat-foot .stat-go {
   float: right;
@@ -901,7 +897,7 @@ function onCreated() {
   transition: transform 0.16s, color 0.16s;
 }
 .stat-card.clickable:hover .stat-go {
-  color: var(--brand);
+  color: var(--slate-500);
   transform: translate(1px, -1px);
 }
 .float-card.clickable {
@@ -945,10 +941,11 @@ function onCreated() {
   transform: translateY(-3px);
   box-shadow: var(--sh-2);
 }
-.stat-card.brand { color: var(--brand); }
-.stat-card.warn { color: #d97706; }
-.stat-card.accent { color: var(--accent); }
-.stat-card.ok { color: #0a7a3c; }
+/* 指标卡配色统一为石板灰系：以明度差而不是色相差区分卡片 */
+.stat-card.brand,
+.stat-card.warn,
+.stat-card.accent,
+.stat-card.ok { color: var(--slate-500); }
 .stat-top {
   display: flex;
   align-items: center;
@@ -961,10 +958,10 @@ function onCreated() {
   display: grid;
   place-items: center;
 }
-.stat-card.brand .stat-ic { background: var(--brand-l); color: var(--brand); }
-.stat-card.warn .stat-ic { background: #fef4e2; color: #d97706; }
-.stat-card.accent .stat-ic { background: var(--accent-l); color: var(--accent); }
-.stat-card.ok .stat-ic { background: #e8f8ee; color: #0a7a3c; }
+.stat-card.brand .stat-ic,
+.stat-card.warn .stat-ic,
+.stat-card.accent .stat-ic,
+.stat-card.ok .stat-ic { background: var(--slate-100); color: var(--slate-600); }
 .stat-tag {
   font-size: 10.5px;
   font-weight: 700;
@@ -1079,8 +1076,8 @@ function onCreated() {
 .bar {
   width: min(38px, 72%);
   border-radius: 8px 8px 0 0;
-  background: linear-gradient(180deg, #ff7a5c 0%, #e63946 70%, #d92b3b 100%);
-  box-shadow: 0 -4px 14px rgba(230, 57, 70, 0.18);
+  background: linear-gradient(180deg, var(--slate-400) 0%, var(--slate-500) 70%, var(--slate-600) 100%);
+  box-shadow: 0 -4px 14px rgba(71, 85, 105, 0.18);
   transition: height 0.5s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.15s;
   min-height: 4px;
 }
@@ -1235,8 +1232,8 @@ function onCreated() {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: var(--brand-l);
-  color: var(--brand);
+  background: var(--slate-100);
+  color: var(--slate-600);
   flex: none;
 }
 .recent-main { flex: 1; min-width: 0; }
@@ -1284,8 +1281,8 @@ function onCreated() {
   transition: border-color 0.16s, background 0.16s, transform 0.14s, box-shadow 0.16s;
 }
 .quick-card:hover {
-  border-color: #f6c9cd;
-  background: var(--brand-l2);
+  border-color: #cfd6e2;
+  background: #fbfcfe;
   transform: translateY(-2px);
   box-shadow: var(--sh-1);
 }
@@ -1305,12 +1302,13 @@ function onCreated() {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: var(--brand-l);
-  color: var(--brand);
+  background: var(--slate-100);
+  color: var(--slate-600);
   margin-bottom: 2px;
 }
-.q-ic.accent { background: var(--accent-l); color: var(--accent); }
-.q-ic.violet { background: #f1edff; color: var(--violet); }
+/* 快捷入口属于装饰性图标，统一走石板灰系；保留修饰类名以兼容模板 */
+.q-ic.accent,
+.q-ic.violet { background: var(--slate-100); color: var(--slate-600); }
 .q-t { font-size: 13px; font-weight: 600; color: var(--ink); }
 .q-d { font-size: 10.5px; color: var(--ink-3); line-height: 1.5; }
 

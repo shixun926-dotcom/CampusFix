@@ -259,7 +259,7 @@ watch(() => props.orderId, load)
   margin-left: 8px;
   font-size: 12px;
   font-weight: 400;
-  color: var(--brand);
+  color: var(--slate-600);
 }
 .empty-line {
   font-size: 12.5px;
@@ -357,8 +357,8 @@ watch(() => props.orderId, load)
   cursor: pointer;
 }
 .row-del:hover {
-  background: var(--brand-l);
-  color: var(--brand);
+  background: var(--slate-100);
+  color: var(--slate-700);
 }
 .slot-form-act {
   display: flex;

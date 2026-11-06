@@ -190,8 +190,8 @@ onBeforeUnmount(() => {
   padding: 8px 12px 9px;
 }
 .chat-row.mine .bubble {
-  background: var(--brand-l);
-  border-color: #f6cfd3;
+  background: var(--slate-100);
+  border-color: var(--slate-200);
   border-radius: 12px 12px 4px 12px;
 }
 .b-meta {
@@ -234,8 +234,8 @@ onBeforeUnmount(() => {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .chat-input input:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px var(--brand-l);
+  border-color: var(--slate-500);
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.14);
 }
 .chat-count {
   margin-top: 5px;
@@ -244,6 +244,7 @@ onBeforeUnmount(() => {
   color: var(--ink-3);
 }
 .chat-count.over {
-  color: var(--brand);
+  color: var(--crit);
+  font-weight: 600;
 }
 </style>
