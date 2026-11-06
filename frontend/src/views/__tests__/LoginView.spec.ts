@@ -151,5 +151,19 @@ describe('LoginView 登录页交互', () => {
       await wrapper.find('button.eye').trigger('click')
       expect(wrapper.find('input[placeholder="请输入密码"]').attributes('type')).toBe('password')
     })
+
+    it('眼睛图标与明文状态一致：密文为划线眼、明文为睁眼', async () => {
+      const wrapper = mountLogin()
+
+      // 初始为密文：图标应为「划线眼」，且按钮提示为「显示密码」
+      expect(wrapper.find('button.eye').attributes('aria-label')).toBe('显示密码')
+      expect(wrapper.find('button.eye').html()).toContain('eyeOff')
+
+      await wrapper.find('button.eye').trigger('click')
+
+      // 切换为明文：图标应为「睁眼」，按钮提示为「隐藏密码」
+      expect(wrapper.find('button.eye').attributes('aria-label')).toBe('隐藏密码')
+      expect(wrapper.find('button.eye').html()).not.toContain('eyeOff')
+    })
   })
 })

@@ -48,7 +48,7 @@
         </div>
         <div class="form-row">
           <label class="lbl">密码</label>
-          <div class="input-wrap">
+          <div class="input-wrap has-eye">
             <Icon name="lock" :size="16" />
             <input
               v-model="password"
@@ -57,8 +57,15 @@
               placeholder="请输入密码"
               @keyup.enter="onSubmit"
             />
-            <button class="eye" type="button" :title="showPwd ? '隐藏密码' : '显示密码'" @click="showPwd = !showPwd">
-              <Icon :name="showPwd ? 'eyeOff' : 'eye'" :size="16" />
+            <button
+              class="eye"
+              type="button"
+              :title="showPwd ? '隐藏密码' : '显示密码'"
+              :aria-label="showPwd ? '隐藏密码' : '显示密码'"
+              @click="showPwd = !showPwd"
+            >
+              <!-- 图标表达「当前状态」：密文时划线眼（不可见），明文时睁眼（可见） -->
+              <Icon :name="showPwd ? 'eye' : 'eyeOff'" :size="16" />
             </button>
           </div>
         </div>

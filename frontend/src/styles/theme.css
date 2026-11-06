@@ -611,6 +611,18 @@ table.tbl .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, Menlo, m
   color: var(--ink-3); transition: .15s;
 }
 .input-wrap .eye:hover { background: var(--line-2); color: var(--ink-2); }
+/* 密码框右侧为自定义「眼睛」按钮预留空间，避免长密码文字被图标遮挡 */
+.input-wrap.has-eye .field { padding-right: 44px; }
+/* 隐藏浏览器自带的密码显示 / 清除控件（Edge、IE 的 ::-ms-reveal、::-ms-clear）。
+   若不隐藏，会与右侧自定义的「眼睛」按钮叠加，出现「两个眼睛」的重影。 */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
 .acc-help {
   margin-top: 18px;
   padding-top: 16px;
